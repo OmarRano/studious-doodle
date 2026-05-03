@@ -15,6 +15,7 @@
     "build:full": "vite build && esbuild server/_core/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist"
   },
   "dependencies": {
+    "22": "^0.0.0",
     "@aws-sdk/client-s3": "^3.693.0",
     "@aws-sdk/s3-request-presigner": "^3.693.0",
     "@hookform/resolvers": "^5.2.2",
@@ -49,6 +50,7 @@
     "@trpc/react-query": "^11.6.0",
     "@trpc/server": "^11.6.0",
     "axios": "^1.12.0",
+    "bcryptjs": "^2.4.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
@@ -62,6 +64,7 @@
     "input-otp": "^1.4.2",
     "jose": "6.1.0",
     "lucide-react": "^0.453.0",
+    "mongoose": "^8.5.0",
     "nanoid": "^5.1.5",
     "next-themes": "^0.4.6",
     "react": "^19.2.1",
@@ -77,13 +80,12 @@
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^1.1.2",
     "wouter": "^3.7.1",
-    "zod": "^4.1.12",
-    "mongoose": "^8.5.0",
-    "bcryptjs": "^2.4.3"
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.15",
     "@tailwindcss/vite": "^4.1.3",
+    "@types/bcryptjs": "^2.4.6",
     "@types/decimal.js": "^7.4.3",
     "@types/express": "4.17.21",
     "@types/google.maps": "^3.58.1",
@@ -102,8 +104,7 @@
     "tw-animate-css": "^1.4.0",
     "typescript": "5.9.3",
     "vite": "^7.1.7",
-    "vitest": "^2.1.4",
-    "@types/bcryptjs": "^2.4.6"
+    "vitest": "^2.1.4"
   },
   "packageManager": "pnpm@10.4.1+sha512.c753b6c3ad7afa13af388fa6d808035a008e30ea9993f58c6663e2bc5ff21679aa834db094987129aa4d488b86df57f7b634981b2f827cdcacc698cc0cfb88af",
   "pnpm": {

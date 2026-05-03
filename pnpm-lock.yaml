@@ -11,6 +11,9 @@ importers:
 
   .:
     dependencies:
+      '22':
+        specifier: ^0.0.0
+        version: 0.0.0
       '@aws-sdk/client-s3':
         specifier: ^3.693.0
         version: 3.1031.0
@@ -275,6 +278,9 @@ importers:
         version: 2.1.9(@types/node@24.12.2)(lightningcss@1.32.0)
 
 packages:
+
+  22@0.0.0:
+    resolution: {integrity: sha512-MdBPNDaCFY4fZVpp14n3Mt4isZ2yS1DrIiOig/iMLljr4zDa0g/583xf/lFXNPwhxCfGKYvyWJSrYyS8jNk2mQ==}
 
   '@antfu/install-pkg@1.1.0':
     resolution: {integrity: sha512-MGQsmw10ZyI+EJo45CdSER4zEb+p31LpDAFp2Z3gkSd1yqVZGi0Ebx++YTEMonJy4oChEMLsxZ64j8FH6sSqtQ==}
@@ -4322,6 +4328,8 @@ packages:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
 
 snapshots:
+
+  22@0.0.0: {}
 
   '@antfu/install-pkg@1.1.0':
     dependencies:
