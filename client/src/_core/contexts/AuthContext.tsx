@@ -22,7 +22,9 @@ import React, {
   useState,
   useCallback,
 } from "react";
+import { signOut } from "firebase/auth";
 import { trpc } from "@/lib/trpc";
+import { firebaseAuth } from "@/lib/firebase";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -54,7 +56,7 @@ export type AuthContextValue = {
   clearUser: () => void;
   /** @deprecated Use refetchUser() after login instead */
   setUser: (user: AuthUser) => void;
-  logout: () => void;
+  logout: () => Promise<void>;
 };
 
 // ── Context ──────────────────────────────────────────────────────────────────
@@ -122,11 +124,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [authMe]
   );
 
+  const logoutMutation = trpc.auth.logout.useMutation({
+    onSuccess: () => {
+      clearUser();
+    },
+    onError: () => {
+      clearUser();
+    },
+  });
+
   // ── logout ────────────────────────────────────────────────────────────────
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
     setUserState(null);
+    try {
+      await logoutMutation.mutateAsync();
+    } catch {
+      // ignore server logout failures
+    }
+    try {
+      await signOut(firebaseAuth);
+    } catch {
+      // ignore firebase sign-out failures
+    }
     window.location.href = "/";
-  }, []);
+  }, [logoutMutation]);
 
   const value = useMemo<AuthContextValue>(
     () => ({

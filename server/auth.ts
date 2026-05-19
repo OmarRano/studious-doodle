@@ -27,7 +27,9 @@
 import { publicProcedure, router } from "./_core/trpc";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
+import crypto from "node:crypto";
 import { User } from "./models/User";
+import { verifyFirebaseIdToken } from "./_core/firebaseAuth";
 import {
   createSessionToken,
   getSessionCookieOptions,
@@ -195,6 +197,52 @@ export const authRouter = router({
       return {
         success: true,
         message: "Welcome back!",
+        role:    user.role,
+      };
+    }),
+
+  /**
+   * auth.firebaseLogin
+   * Verifies a Firebase ID token and signs the user in on the backend.
+   * If the user does not exist yet, a new buyer record is created.
+   */
+  firebaseLogin: publicProcedure
+    .input(
+      z.object({ idToken: z.string().min(1, "Firebase ID token is required") })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const firebasePayload = await verifyFirebaseIdToken(input.idToken);
+      if (!firebasePayload?.email) {
+        throw new Error("Invalid Firebase token.");
+      }
+
+      const email = firebasePayload.email.toLowerCase().trim();
+      let user = await User.findOne({ email }).select("+passwordHash");
+
+      if (!user) {
+        const randomPassword = crypto.randomBytes(32).toString("hex");
+        const passwordHash = await bcrypt.hash(randomPassword, 12);
+
+        user = await User.create({
+          name:         firebasePayload.name?.trim() || email.split("@")[0],
+          email,
+          passwordHash,
+          role:         "buyer",
+          isActive:     true,
+          isAffiliate:  false,
+        });
+      }
+
+      if (!user.isActive) {
+        throw new Error("Your account has been deactivated. Please contact support.");
+      }
+
+      const token = await createSessionToken(user);
+      ctx.res.cookie(COOKIE_NAME, token, getSessionCookieOptions(ctx.req));
+
+      return {
+        success: true,
+        message: "Signed in with Firebase successfully.",
         role:    user.role,
       };
     }),

@@ -31,9 +31,6 @@ async function startServer() {
   const app = express();
   const server = createServer(app);
 
-  app.use(express.json({ limit: "50mb" }));
-  app.use(express.urlencoded({ limit: "50mb", extended: true }));
-
   // 2. Rate limiting: stricter on auth, general on all API
   app.use("/api/trpc/auth", authRateLimiter);
   app.use("/api/trpc", apiRateLimiter);
@@ -43,6 +40,10 @@ async function startServer() {
     "/api/trpc",
     createExpressMiddleware({ router: appRouter, createContext })
   );
+
+  // 4. Other routes can still use express body parsing if needed
+  app.use(express.json({ limit: "50mb" }));
+  app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
   // 4. Frontend (Vite dev or static build)
   if (process.env.NODE_ENV === "development") {

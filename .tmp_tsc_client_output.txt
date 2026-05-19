@@ -1,0 +1,60 @@
+client/src/components/Map.tsx(89,29): error TS2339: Property 'env' does not exist on type 'ImportMeta'.
+client/src/components/Map.tsx(91,15): error TS2339: Property 'env' does not exist on type 'ImportMeta'.
+client/src/lib/firebase.ts(5,23): error TS2339: Property 'env' does not exist on type 'ImportMeta'.
+client/src/lib/firebase.ts(6,27): error TS2339: Property 'env' does not exist on type 'ImportMeta'.
+client/src/lib/firebase.ts(7,26): error TS2339: Property 'env' does not exist on type 'ImportMeta'.
+client/src/lib/firebase.ts(8,30): error TS2339: Property 'env' does not exist on type 'ImportMeta'.
+client/src/lib/firebase.ts(9,34): error TS2339: Property 'env' does not exist on type 'ImportMeta'.
+client/src/lib/firebase.ts(10,22): error TS2339: Property 'env' does not exist on type 'ImportMeta'.
+client/src/lib/firebase.ts(11,30): error TS2339: Property 'env' does not exist on type 'ImportMeta'.
+client/src/main.tsx(27,3): error TS2322: Type 'typeof SuperJSON' is not assignable to type 'TypeError<"The transformer property has moved to httpLink/httpBatchLink/wsLink">'.
+  Type 'typeof SuperJSON' is not assignable to type '"The transformer property has moved to httpLink/httpBatchLink/wsLink"'.
+client/src/main.tsx(29,19): error TS2345: Argument of type '{ url: string; headers: () => Promise<{ authorization?: undefined; } | { authorization: string; }>; }' is not assignable to parameter of type 'HTTPBatchLinkOptions<{ ctx: TrpcContext; meta: object; errorShape: DefaultErrorShape; transformer: true; }>'.
+  Property 'transformer' is missing in type '{ url: string; headers: () => Promise<{ authorization?: undefined; } | { authorization: string; }>; }' but required in type 'TransformerOptionYes'.
+client/src/pages/BuildingView.tsx(25,43): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(predicate: (value: FlattenMaps<IStore> & Required<{ _id: ObjectId; }> & { __v: number; }, index: number, array: (FlattenMaps<IStore> & Required<...> & { ...; })[]) => value is FlattenMaps<...> & ... 1 more ... & { ...; }, thisArg?: any): (FlattenMaps<...> & ... 1 more ... & { ...; })[]', gave the following error.
+    Argument of type '(s: Store) => boolean' is not assignable to parameter of type '(value: FlattenMaps<IStore> & Required<{ _id: ObjectId; }> & { __v: number; }, index: number, array: (FlattenMaps<IStore> & Required<...> & { ...; })[]) => value is FlattenMaps<...> & ... 1 more ... & { ...; }'.
+      Types of parameters 's' and 'value' are incompatible.
+        Type 'FlattenMaps<IStore> & Required<{ _id: ObjectId; }> & { __v: number; }' is not assignable to type 'Store'.
+          Types of property '_id' are incompatible.
+            Type 'ObjectId' is not assignable to type 'string'.
+  Overload 2 of 2, '(predicate: (value: FlattenMaps<IStore> & Required<{ _id: ObjectId; }> & { __v: number; }, index: number, array: (FlattenMaps<IStore> & Required<...> & { ...; })[]) => unknown, thisArg?: any): (FlattenMaps<...> & ... 1 more ... & { ...; })[]', gave the following error.
+    Argument of type '(s: Store) => boolean' is not assignable to parameter of type '(value: FlattenMaps<IStore> & Required<{ _id: ObjectId; }> & { __v: number; }, index: number, array: (FlattenMaps<IStore> & Required<...> & { ...; })[]) => unknown'.
+      Types of parameters 's' and 'value' are incompatible.
+        Type 'FlattenMaps<IStore> & Required<{ _id: ObjectId; }> & { __v: number; }' is not assignable to type 'Store'.
+          Types of property '_id' are incompatible.
+            Type 'ObjectId' is not assignable to type 'string'.
+client/src/pages/BuildingView.tsx(26,44): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(predicate: (value: FlattenMaps<IStore> & Required<{ _id: ObjectId; }> & { __v: number; }, index: number, array: (FlattenMaps<IStore> & Required<...> & { ...; })[]) => value is FlattenMaps<...> & ... 1 more ... & { ...; }, thisArg?: any): (FlattenMaps<...> & ... 1 more ... & { ...; })[]', gave the following error.
+    Argument of type '(s: Store) => boolean' is not assignable to parameter of type '(value: FlattenMaps<IStore> & Required<{ _id: ObjectId; }> & { __v: number; }, index: number, array: (FlattenMaps<IStore> & Required<...> & { ...; })[]) => value is FlattenMaps<...> & ... 1 more ... & { ...; }'.
+      Types of parameters 's' and 'value' are incompatible.
+        Type 'FlattenMaps<IStore> & Required<{ _id: ObjectId; }> & { __v: number; }' is not assignable to type 'Store'.
+          Types of property '_id' are incompatible.
+            Type 'ObjectId' is not assignable to type 'string'.
+  Overload 2 of 2, '(predicate: (value: FlattenMaps<IStore> & Required<{ _id: ObjectId; }> & { __v: number; }, index: number, array: (FlattenMaps<IStore> & Required<...> & { ...; })[]) => unknown, thisArg?: any): (FlattenMaps<...> & ... 1 more ... & { ...; })[]', gave the following error.
+    Argument of type '(s: Store) => boolean' is not assignable to parameter of type '(value: FlattenMaps<IStore> & Required<{ _id: ObjectId; }> & { __v: number; }, index: number, array: (FlattenMaps<IStore> & Required<...> & { ...; })[]) => unknown'.
+      Types of parameters 's' and 'value' are incompatible.
+        Type 'FlattenMaps<IStore> & Required<{ _id: ObjectId; }> & { __v: number; }' is not assignable to type 'Store'.
+          Types of property '_id' are incompatible.
+            Type 'ObjectId' is not assignable to type 'string'.
+client/src/pages/BuildingView.tsx(27,17): error TS2345: Argument of type '(FlattenMaps<IStore> & Required<{ _id: ObjectId; }> & { __v: number; })[]' is not assignable to parameter of type 'SetStateAction<Store[]>'.
+  Type '(FlattenMaps<IStore> & Required<{ _id: ObjectId; }> & { __v: number; })[]' is not assignable to type 'Store[]'.
+    Type 'FlattenMaps<IStore> & Required<{ _id: ObjectId; }> & { __v: number; }' is not assignable to type 'Store'.
+      Types of property '_id' are incompatible.
+        Type 'ObjectId' is not assignable to type 'string'.
+client/src/pages/BuildingView.tsx(28,18): error TS2345: Argument of type '(FlattenMaps<IStore> & Required<{ _id: ObjectId; }> & { __v: number; })[]' is not assignable to parameter of type 'SetStateAction<Store[]>'.
+  Type '(FlattenMaps<IStore> & Required<{ _id: ObjectId; }> & { __v: number; })[]' is not assignable to type 'Store[]'.
+    Type 'FlattenMaps<IStore> & Required<{ _id: ObjectId; }> & { __v: number; }' is not assignable to type 'Store'.
+      Types of property '_id' are incompatible.
+        Type 'ObjectId' is not assignable to type 'string'.
+client/src/pages/ProductDetail.tsx(51,110): error TS2339: Property 'name' does not exist on type 'ObjectId'.
+client/src/pages/ProductDetail.tsx(117,61): error TS2322: Type 'string | ObjectId' is not assignable to type 'ReactNode'.
+  Type 'ObjectId' is not assignable to type 'ReactNode'.
+client/src/pages/ProductDetail.tsx(121,83): error TS2339: Property 'name' does not exist on type 'ObjectId'.
+client/src/pages/StorePage.tsx(34,72): error TS2304: Cannot find name 'id'.
+client/src/pages/StorePage.tsx(39,22): error TS2352: Conversion of type 'FlattenMaps<IStore> & Required<{ _id: ObjectId; }> & { __v: number; }' to type 'Store' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Types of property '_id' are incompatible.
+    Type 'ObjectId' is not comparable to type 'string'.
+client/src/pages/buyer/ProductCatalog.tsx(40,32): error TS2322: Type 'string | number' is not assignable to type 'string'.
+  Type 'number' is not assignable to type 'string'.
+client/src/pages/manager/InventoryManagement.tsx(39,73): error TS2322: Type 'string' is not assignable to type '"restock" | "sale_adjustment" | "damage" | "return" | "correction" | "other"'.

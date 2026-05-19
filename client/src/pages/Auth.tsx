@@ -17,6 +17,11 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation, useSearch } from "wouter";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
+import { firebaseAuth } from "@/lib/firebase";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
 import {
   ShoppingBag, Mail, Lock, User, Phone,
   Eye, EyeOff, CheckCircle2, Shield, Truck,
@@ -160,28 +165,13 @@ export default function Auth() {
    * We call setUser() which in the new AuthContext triggers a refetch of auth.me,
    * giving us the complete user object from MongoDB.
    */
-  const loginBuyer = trpc.auth.loginBuyer.useMutation({
+  const firebaseLogin = trpc.auth.firebaseLogin.useMutation({
     onSuccess: (d) => {
-      toast.success("Welcome back!");
-      // setUser now triggers auth.me refetch — gets real full user from server
-      setUser(null); // triggers refetch in fixed AuthContext
+      toast.success("Signed in with Firebase.");
+      setUser(null); // triggers auth.me refetch in fixed AuthContext
       setTimeout(() => navigate(getRoleRedirect(d.role)), 600);
     },
-    onError: (e) => toast.error(e.message || "Login failed"),
-  });
-
-  /**
-   * BUYER SIGNUP
-   * After success: server creates user + sets cookie.
-   * Same pattern — refetch auth.me to get real user.
-   */
-  const signupBuyer = trpc.auth.signupBuyer.useMutation({
-    onSuccess: () => {
-      toast.success("Account created! Welcome to Gimbiya Mall.");
-      setUser(null); // triggers refetch
-      setTimeout(() => navigate("/buyer"), 600);
-    },
-    onError: (e) => toast.error(e.message || "Signup failed"),
+    onError: (e) => toast.error(e.message || "Firebase login failed"),
   });
 
   /**
@@ -199,25 +189,35 @@ export default function Auth() {
 
   // ── Handlers ────────────────────────────────────────────────────────────────
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!loginEmail || !loginPw) return toast.error("Please fill all fields");
-    loginBuyer.mutate({ email: loginEmail, password: loginPw });
+
+    try {
+      await signInWithEmailAndPassword(firebaseAuth, loginEmail, loginPw);
+      const idToken = await firebaseAuth.currentUser?.getIdToken();
+      if (!idToken) throw new Error("Unable to retrieve Firebase token.");
+      firebaseLogin.mutate({ idToken });
+    } catch (err: any) {
+      toast.error(err?.message || "Login failed");
+    }
   };
 
-  const handleSignup = (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!signupName || !signupEmail || !signupPw || !signupConfirm) {
       return toast.error("Fill all required fields");
     }
     if (signupPw !== signupConfirm) return toast.error("Passwords don't match");
-    signupBuyer.mutate({
-      name: signupName,
-      email: signupEmail,
-      phone: signupPhone || undefined,
-      password: signupPw,
-      confirmPassword: signupConfirm,
-    });
+
+    try {
+      await createUserWithEmailAndPassword(firebaseAuth, signupEmail, signupPw);
+      const idToken = await firebaseAuth.currentUser?.getIdToken();
+      if (!idToken) throw new Error("Unable to retrieve Firebase token.");
+      firebaseLogin.mutate({ idToken });
+    } catch (err: any) {
+      toast.error(err?.message || "Signup failed");
+    }
   };
 
   const handleStaffLogin = (e: React.FormEvent) => {
@@ -228,7 +228,7 @@ export default function Auth() {
 
   const pwMatch    = signupConfirm.length > 0 && signupConfirm === signupPw;
   const pwMismatch = signupConfirm.length > 0 && signupConfirm !== signupPw;
-  const isPending  = loginBuyer.isPending || signupBuyer.isPending || loginStaff.isPending;
+  const isPending  = firebaseLogin.isPending || loginStaff.isPending;
 
   // ── Render ──────────────────────────────────────────────────────────────────
 
@@ -496,7 +496,7 @@ export default function Auth() {
                     transition: "all 0.2s",
                   }}
                 >
-                  {loginBuyer.isPending ? "Signing in…" : "Sign In"}
+                  {firebaseLogin.isPending ? "Signing in…" : "Sign In"}
                 </button>
               </form>
 
@@ -764,7 +764,7 @@ export default function Auth() {
                     transition: "all 0.2s",
                   }}
                 >
-                  {signupBuyer.isPending ? "Creating account…" : "Create Account"}
+                  {firebaseLogin.isPending ? "Creating account…" : "Create Account"}
                 </button>
               </form>
 

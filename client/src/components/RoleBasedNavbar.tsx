@@ -12,6 +12,8 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
+import { firebaseAuth } from "@/lib/firebase";
+import { signOut } from "firebase/auth";
 import {
   ShoppingBag, Shield, Settings, Truck, Code2,
   Package, TrendingUp, LogOut, Home, ChevronDown, BarChart2,
@@ -36,14 +38,23 @@ export default function RoleBasedNavbar() {
   const [, navigate]        = useLocation();
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
-  // Server-side logout — clears the httpOnly cookie
+  // Server-side logout — clears the httpOnly cookie and signs out of Firebase too.
   const logoutMutation = trpc.auth.logout.useMutation({
-    onSuccess: () => {
+    onSuccess: async () => {
+      try {
+        await signOut(firebaseAuth);
+      } catch {
+        // ignore firebase logout failures
+      }
       clearUser();
       navigate("/");
     },
-    onError: () => {
-      // Even if server call fails, clear local state and redirect
+    onError: async () => {
+      try {
+        await signOut(firebaseAuth);
+      } catch {
+        // ignore firebase logout failures
+      }
       clearUser();
       navigate("/");
     },
