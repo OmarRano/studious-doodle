@@ -1,10 +1,9 @@
 import { router, publicProcedure } from "./_core/trpc";
 import { buyerProcedure } from "./rbac";
 import { z } from "zod";
-import { initiateMonnifyPayment, verifyMonnifyPayment, getMonnifyTransactionDetails } from "./monnify";
-import { getDb, getOrderByOrderId } from "./db";
-import { orders } from "../drizzle/schema";
-import { eq } from "drizzle-orm";
+import { initiateMonnifyPayment, getMonnifyTransactionDetails } from "./monnify";
+import { getOrderByOrderId } from "./db";
+import { Order } from "./models/Order";
 import { nanoid } from "nanoid";
 
 export const paymentRouter = router({
@@ -17,14 +16,12 @@ export const paymentRouter = router({
       redirectUrl: z.string(),
     }))
     .mutation(async ({ input, ctx }) => {
-      const db = await getDb();
-      if (!db) throw new Error("Database not available");
-
       // Get order details
       const order = await getOrderByOrderId(input.orderId);
       if (!order) throw new Error("Order not found");
 
-      if (order.buyerId !== ctx.user.id) {
+      const buyerId = (order as any).buyerId?._id || (order as any).buyerId;
+      if (buyerId.toString() !== (ctx.user as any)._id.toString()) {
         throw new Error("Unauthorized: Order does not belong to this user");
       }
 
@@ -43,8 +40,8 @@ export const paymentRouter = router({
           contractCode: process.env.MONNIFY_CONTRACT_CODE || "",
           redirectUrl: input.redirectUrl,
           metadata: {
-            orderId: order.id,
-            userId: ctx.user.id,
+            orderId: (order as any)._id.toString(),
+            userId: (ctx.user as any)._id.toString(),
             transactionReference: transactionRef,
           },
         });
@@ -53,12 +50,14 @@ export const paymentRouter = router({
           throw new Error(paymentResponse.responseMessage);
         }
 
-        // Update order with payment status
-        await db.update(orders)
-          .set({
+        // Update order with payment status and reference
+        await Order.findOneAndUpdate(
+          { orderId: order.orderId },
+          {
             paymentStatus: "pending",
-          })
-          .where(eq(orders.id, order.id));
+            paymentReference: transactionRef
+          }
+        );
 
         return {
           success: true,
@@ -79,7 +78,7 @@ export const paymentRouter = router({
     .input(z.object({
       transactionReference: z.string(),
     }))
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input }) => {
       try {
         const paymentDetails = await getMonnifyTransactionDetails(input.transactionReference);
 
@@ -87,22 +86,15 @@ export const paymentRouter = router({
           throw new Error("Payment details not found");
         }
 
-        const db = await getDb();
-        if (!db) throw new Error("Database not available");
-
         // Update order payment status based on verification
         if (paymentDetails.paymentStatus === "PAID") {
-          const orderList = await db.select().from(orders)
-            .limit(1);
-
-          if (orderList.length > 0) {
-            await db.update(orders)
-              .set({
-                paymentStatus: "completed",
-                status: "paid",
-              })
-              .where(eq(orders.id, orderList[0].id));
-          }
+          await Order.findOneAndUpdate(
+            { paymentReference: input.transactionReference },
+            {
+              paymentStatus: "paid",
+              status: "paid",
+            }
+          );
         }
 
         return {
@@ -127,20 +119,18 @@ export const paymentRouter = router({
       offset: z.number().default(0),
     }))
     .query(async ({ input, ctx }) => {
-      const db = await getDb();
-      if (!db) return [];
-
-      const result = await db.select().from(orders)
-        .where(eq(orders.buyerId, ctx.user.id))
+      const result = await Order.find({ buyerId: (ctx.user as any)._id })
+        .sort({ createdAt: -1 })
         .limit(input.limit)
-        .offset(input.offset);
+        .skip(input.offset)
+        .lean();
 
       return result.map(order => ({
         orderId: order.orderId,
         amount: order.finalAmount,
         status: order.paymentStatus,
         createdAt: order.createdAt,
-        items: order.id, // Will be populated by client
+        items: (order as any)._id.toString(),
       }));
     }),
 
@@ -152,9 +142,6 @@ export const paymentRouter = router({
       orderId: z.string(),
     }))
     .query(async ({ input }) => {
-      const db = await getDb();
-      if (!db) return null;
-
       const order = await getOrderByOrderId(input.orderId);
       if (!order) return null;
 

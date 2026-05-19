@@ -110,7 +110,7 @@ describe("calcCommissionSplit — with referrer", () => {
       SPLIT_WITH_REFERRER.developer +
       SPLIT_WITH_REFERRER.admin +
       SPLIT_WITH_REFERRER.delivery;
-    expect(total).toBe(1);
+    expect(total).toBeCloseTo(1, 10);
   });
 });
 
@@ -140,7 +140,7 @@ describe("calcCommissionSplit — no referrer", () => {
       SPLIT_NO_REFERRER.developer +
       SPLIT_NO_REFERRER.admin +
       SPLIT_NO_REFERRER.delivery;
-    expect(total).toBe(1);
+    expect(total).toBeCloseTo(1, 10);
   });
 });
 

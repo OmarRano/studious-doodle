@@ -8,10 +8,96 @@
  * lightweight route that uses each procedure, and assert FORBIDDEN vs success.
  */
 
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { appRouter } from "./routers";
 import type { TrpcContext } from "./_core/context";
 import type { IUser } from "./models/User";
+
+// Mock Mongoose models to prevent database connection attempts during tests
+vi.mock("./models/Product", () => {
+  const Product = {
+    find: vi.fn().mockReturnThis(),
+    populate: vi.fn().mockReturnThis(),
+    skip: vi.fn().mockReturnThis(),
+    limit: vi.fn().mockReturnThis(),
+    lean: vi.fn().mockResolvedValue([]),
+    select: vi.fn().mockReturnThis(),
+    sort: vi.fn().mockReturnThis(),
+    create: vi.fn().mockResolvedValue({ _id: "000000000000000000000001" }),
+    countDocuments: vi.fn().mockResolvedValue(0),
+    findById: vi.fn().mockResolvedValue(null),
+    findByIdAndUpdate: vi.fn().mockResolvedValue({}),
+  };
+  return { Product };
+});
+
+vi.mock("./models/Category", () => {
+  const Category = {
+    find: vi.fn().mockReturnThis(),
+    lean: vi.fn().mockResolvedValue([]),
+    create: vi.fn().mockResolvedValue({ _id: "000000000000000000000001" }),
+    findByIdAndUpdate: vi.fn().mockResolvedValue({}),
+  };
+  return { Category };
+});
+
+vi.mock("./models/User", () => {
+  const User = {
+    find: vi.fn().mockReturnThis(),
+    select: vi.fn().mockReturnThis(),
+    sort: vi.fn().mockReturnThis(),
+    skip: vi.fn().mockReturnThis(),
+    limit: vi.fn().mockReturnThis(),
+    lean: vi.fn().mockResolvedValue([]),
+    findOne: vi.fn().mockResolvedValue(null),
+    countDocuments: vi.fn().mockResolvedValue(0),
+    aggregate: vi.fn().mockResolvedValue([{ total: 0 }]),
+    create: vi.fn().mockResolvedValue({ _id: "000000000000000000000001" }),
+    findByIdAndUpdate: vi.fn().mockResolvedValue({}),
+  };
+  return { User };
+});
+
+vi.mock("./models/Order", () => {
+  const Order = {
+    find: vi.fn().mockReturnThis(),
+    sort: vi.fn().mockReturnThis(),
+    skip: vi.fn().mockReturnThis(),
+    limit: vi.fn().mockReturnThis(),
+    populate: vi.fn().mockReturnThis(),
+    lean: vi.fn().mockResolvedValue([]),
+    findOne: vi.fn().mockResolvedValue(null),
+    countDocuments: vi.fn().mockResolvedValue(0),
+    aggregate: vi.fn().mockResolvedValue([{ total: 0 }]),
+    create: vi.fn().mockResolvedValue({ _id: "000000000000000000000001" }),
+    findOneAndUpdate: vi.fn().mockResolvedValue({}),
+  };
+  return { Order };
+});
+
+vi.mock("./models/CartItem", () => {
+  const CartItem = {
+    find: vi.fn().mockReturnThis(),
+    populate: vi.fn().mockReturnThis(),
+    lean: vi.fn().mockResolvedValue([]),
+    deleteMany: vi.fn().mockResolvedValue({}),
+    findByIdAndUpdate: vi.fn().mockResolvedValue({}),
+  };
+  return { CartItem };
+});
+
+vi.mock("./models/Store", () => {
+  const Store = {
+    find: vi.fn().mockReturnThis(),
+    populate: vi.fn().mockReturnThis(),
+    skip: vi.fn().mockReturnThis(),
+    limit: vi.fn().mockResolvedValue([]),
+    findById: vi.fn().mockResolvedValue(null),
+    create: vi.fn().mockResolvedValue({ _id: "000000000000000000000001" }),
+    findByIdAndUpdate: vi.fn().mockResolvedValue({}),
+  };
+  return { Store };
+});
 
 // ─── Context factory ──────────────────────────────────────────────────────────
 
@@ -66,13 +152,13 @@ describe("Public procedures — accessible to all", () => {
     // Returns an array (empty in test env — no MongoDB). Should not throw UNAUTHORIZED.
     await expect(
       caller(null).products.list({ limit: 5, offset: 0 })
-    ).rejects.not.toMatchObject({ code: "UNAUTHORIZED" });
+    ).resolves.toBeDefined();
   });
 
   it("categories.list is accessible without login", async () => {
     await expect(
       caller(null).categories.list()
-    ).rejects.not.toMatchObject({ code: "UNAUTHORIZED" });
+    ).resolves.toBeDefined();
   });
 });
 
@@ -96,10 +182,8 @@ describe("adminProcedure", () => {
   const roles: Role[] = ["manager", "stock_manager", "delivery", "reader", "buyer", "developer"];
 
   it("allows admin role", async () => {
-    // admin.stats hits the DB (no connection in test) — but the RBAC check fires first.
-    // A DB error (not FORBIDDEN) means the role was accepted.
     const p = caller("admin").admin.stats();
-    await expect(p).rejects.not.toMatchObject({ code: "FORBIDDEN" });
+    await expect(p).resolves.toBeDefined();
   });
 
   for (const role of roles) {
@@ -121,7 +205,7 @@ describe("managerProcedure", () => {
 
   it("allows manager role past the RBAC gate", async () => {
     const p = caller("manager").products.create(input);
-    await expect(p).rejects.not.toMatchObject({ code: "FORBIDDEN" });
+    await expect(p).resolves.toBeDefined();
   });
 
   for (const role of blockedRoles) {
@@ -137,7 +221,7 @@ describe("stockManagerProcedure", () => {
 
   it("allows stock_manager role", async () => {
     const p = caller("stock_manager").stockManager.summary();
-    await expect(p).rejects.not.toMatchObject({ code: "FORBIDDEN" });
+    await expect(p).resolves.toBeDefined();
   });
 
   for (const role of blockedRoles) {
@@ -155,7 +239,7 @@ describe("inventoryProcedure — shared access", () => {
   for (const role of allowedRoles) {
     it(`allows ${role}`, async () => {
       const p = caller(role).inventory.list({ limit: 5, offset: 0 });
-      await expect(p).rejects.not.toMatchObject({ code: "FORBIDDEN" });
+      await expect(p).resolves.toBeDefined();
     });
   }
 
@@ -172,7 +256,7 @@ describe("developerProcedure", () => {
 
   it("allows developer role", async () => {
     const p = caller("developer").developer.platformStats();
-    await expect(p).rejects.not.toMatchObject({ code: "FORBIDDEN" });
+    await expect(p).resolves.toBeDefined();
   });
 
   for (const role of blockedRoles) {
@@ -188,7 +272,7 @@ describe("deliveryProcedure", () => {
 
   it("allows delivery role", async () => {
     const p = caller("delivery").delivery.myOrders({ limit: 5, offset: 0 });
-    await expect(p).rejects.not.toMatchObject({ code: "FORBIDDEN" });
+    await expect(p).resolves.toBeDefined();
   });
 
   for (const role of blockedRoles) {
@@ -206,7 +290,7 @@ describe("buyerProcedure — buyer AND reader can access", () => {
   for (const role of allowedRoles) {
     it(`allows ${role}`, async () => {
       const p = caller(role).cart.list();
-      await expect(p).rejects.not.toMatchObject({ code: "FORBIDDEN" });
+      await expect(p).resolves.toBeDefined();
     });
   }
 
@@ -227,7 +311,7 @@ describe("staffProcedure — all staff roles", () => {
   for (const role of allowedRoles) {
     it(`allows ${role}`, async () => {
       const p = caller(role).orders.updateStatus(input);
-      await expect(p).rejects.not.toMatchObject({ code: "FORBIDDEN" });
+      await expect(p).resolves.toBeDefined();
     });
   }
 
@@ -244,7 +328,8 @@ describe("readerProcedure", () => {
 
   it("allows reader role", async () => {
     const p = caller("reader").affiliate.getReferralLink();
-    await expect(p).rejects.not.toMatchObject({ code: "FORBIDDEN" });
+    // Use resolves instead of rejects since it should pass RBAC and succeed (mocked)
+    await expect(p).resolves.toBeDefined();
   });
 
   for (const role of blockedRoles) {
@@ -258,7 +343,7 @@ describe("readerProcedure", () => {
 describe("developer.users routes", () => {
   it("developer can list users", async () => {
     const p = caller("developer").developer.users.list({ limit: 5, offset: 0 });
-    await expect(p).rejects.not.toMatchObject({ code: "FORBIDDEN" });
+    await expect(p).resolves.toBeDefined();
   });
 
   it("admin cannot list developer users", async () => {
@@ -277,8 +362,7 @@ describe("admin staff management routes", () => {
     const p = caller("admin").admin.onboardStockManager({
       name: "Test Stock", email: "s@test.com", password: "Pass@1234",
     });
-    // DB error expected, not FORBIDDEN
-    await expect(p).rejects.not.toMatchObject({ code: "FORBIDDEN" });
+    await expect(p).resolves.toBeDefined();
   });
 
   it("manager cannot onboard stock managers", async () => {
@@ -291,6 +375,6 @@ describe("admin staff management routes", () => {
 
   it("admin can list staff", async () => {
     const p = caller("admin").admin.listStaff({});
-    await expect(p).rejects.not.toMatchObject({ code: "FORBIDDEN" });
+    await expect(p).resolves.toBeDefined();
   });
 });

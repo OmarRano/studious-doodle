@@ -13,10 +13,109 @@
  * a FORBIDDEN error. That's the expected pattern in this test suite.
  */
 
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { appRouter } from "./routers";
 import type { TrpcContext } from "./_core/context";
 import type { IUser } from "./models/User";
+
+// Mock Mongoose models to prevent database connection attempts during tests
+vi.mock("./models/Product", () => {
+  const Product = {
+    find: vi.fn().mockReturnThis(),
+    populate: vi.fn().mockReturnThis(),
+    skip: vi.fn().mockReturnThis(),
+    limit: vi.fn().mockReturnThis(),
+    lean: vi.fn().mockResolvedValue([]),
+    select: vi.fn().mockReturnThis(),
+    sort: vi.fn().mockReturnThis(),
+    create: vi.fn().mockResolvedValue({ _id: "000000000000000000000001" }),
+    countDocuments: vi.fn().mockResolvedValue(0),
+    findById: vi.fn().mockResolvedValue({ _id: "000000000000000000000001", name: "Test Product", stockQuantity: 10 }),
+    findByIdAndUpdate: vi.fn().mockResolvedValue({}),
+  };
+  return { Product };
+});
+
+vi.mock("./models/Category", () => {
+  const Category = {
+    find: vi.fn().mockReturnThis(),
+    lean: vi.fn().mockResolvedValue([]),
+    create: vi.fn().mockResolvedValue({ _id: "000000000000000000000001" }),
+    findByIdAndUpdate: vi.fn().mockResolvedValue({}),
+  };
+  return { Category };
+});
+
+vi.mock("./models/User", () => {
+  const User = {
+    find: vi.fn().mockReturnThis(),
+    select: vi.fn().mockReturnThis(),
+    sort: vi.fn().mockReturnThis(),
+    skip: vi.fn().mockReturnThis(),
+    limit: vi.fn().mockReturnThis(),
+    lean: vi.fn().mockResolvedValue([]),
+    findOne: vi.fn().mockResolvedValue(null),
+    countDocuments: vi.fn().mockResolvedValue(0),
+    aggregate: vi.fn().mockResolvedValue([{ total: 0 }]),
+    create: vi.fn().mockResolvedValue({ _id: "000000000000000000000001" }),
+    findByIdAndUpdate: vi.fn().mockResolvedValue({}),
+  };
+  return { User };
+});
+
+vi.mock("./models/Order", () => {
+  const Order = {
+    find: vi.fn().mockReturnThis(),
+    sort: vi.fn().mockReturnThis(),
+    skip: vi.fn().mockReturnThis(),
+    limit: vi.fn().mockReturnThis(),
+    populate: vi.fn().mockReturnThis(),
+    lean: vi.fn().mockResolvedValue({
+      _id: "000000000000000000000001",
+      orderId: "ORD-123",
+      buyerId: "000000000000000000000099",
+      status: "pending",
+      items: [],
+    }),
+    findOne: vi.fn().mockReturnThis(),
+    exec: vi.fn().mockResolvedValue({
+      _id: "000000000000000000000001",
+      orderId: "ORD-123",
+      buyerId: "000000000000000000000099",
+      status: "pending",
+      items: [],
+    }),
+    countDocuments: vi.fn().mockResolvedValue(0),
+    aggregate: vi.fn().mockResolvedValue([{ total: 0 }]),
+    create: vi.fn().mockResolvedValue({ _id: "000000000000000000000001" }),
+    findOneAndUpdate: vi.fn().mockResolvedValue({}),
+  };
+  return { Order };
+});
+
+vi.mock("./models/CartItem", () => {
+  const CartItem = {
+    find: vi.fn().mockReturnThis(),
+    populate: vi.fn().mockReturnThis(),
+    lean: vi.fn().mockResolvedValue([]),
+    deleteMany: vi.fn().mockResolvedValue({}),
+    findByIdAndUpdate: vi.fn().mockResolvedValue({}),
+  };
+  return { CartItem };
+});
+
+vi.mock("./models/Store", () => {
+  const Store = {
+    find: vi.fn().mockReturnThis(),
+    populate: vi.fn().mockReturnThis(),
+    skip: vi.fn().mockReturnThis(),
+    limit: vi.fn().mockResolvedValue([]),
+    findById: vi.fn().mockResolvedValue(null),
+    create: vi.fn().mockResolvedValue({ _id: "000000000000000000000001" }),
+    findByIdAndUpdate: vi.fn().mockResolvedValue({}),
+  };
+  return { Store };
+});
 
 // ─── Context helpers ──────────────────────────────────────────────────────────
 
@@ -48,10 +147,10 @@ function caller(role: Role) {
 
 // ─── stockManager.summary ────────────────────────────────────────────────────
 describe("stockManager.summary", () => {
-  it("is accessible to stock_manager (DB error, not FORBIDDEN)", async () => {
+  it("is accessible to stock_manager", async () => {
     await expect(
       caller("stock_manager").stockManager.summary()
-    ).rejects.not.toMatchObject({ code: "FORBIDDEN" });
+    ).resolves.toBeDefined();
   });
 
   it("blocks buyer with FORBIDDEN", async () => {
@@ -81,11 +180,9 @@ describe("stockManager.products", () => {
     ).rejects.toMatchObject({ code: "BAD_REQUEST" });
   });
 
-  it("passes validation for stock_manager (no FORBIDDEN or BAD_REQUEST)", async () => {
+  it("passes validation for stock_manager", async () => {
     const p = caller("stock_manager").stockManager.products({ limit: 10, offset: 0 });
-    // Should error at DB level, not validation
-    await expect(p).rejects.not.toMatchObject({ code: "FORBIDDEN" });
-    await expect(p).rejects.not.toMatchObject({ code: "BAD_REQUEST" });
+    await expect(p).resolves.toBeDefined();
   });
 });
 
@@ -93,18 +190,17 @@ describe("stockManager.products", () => {
 describe("stockManager.lowStockAlerts", () => {
   it("accepts default threshold", async () => {
     const p = caller("stock_manager").stockManager.lowStockAlerts({ threshold: 10 });
-    await expect(p).rejects.not.toMatchObject({ code: "FORBIDDEN" });
-    await expect(p).rejects.not.toMatchObject({ code: "BAD_REQUEST" });
+    await expect(p).resolves.toBeDefined();
   });
 
   it("accepts threshold of 0 (out-of-stock only)", async () => {
     const p = caller("stock_manager").stockManager.lowStockAlerts({ threshold: 0 });
-    await expect(p).rejects.not.toMatchObject({ code: "BAD_REQUEST" });
+    await expect(p).resolves.toBeDefined();
   });
 
   it("accepts large threshold", async () => {
     const p = caller("stock_manager").stockManager.lowStockAlerts({ threshold: 1000 });
-    await expect(p).rejects.not.toMatchObject({ code: "BAD_REQUEST" });
+    await expect(p).resolves.toBeDefined();
   });
 });
 
@@ -116,17 +212,16 @@ describe("stockManager.adjustStock — Zod input validation", () => {
     reason:         "restock" as const,
   };
 
-  it("passes valid input for stock_manager (DB-level error, not validation)", async () => {
+  it("passes valid input for stock_manager", async () => {
     const p = caller("stock_manager").stockManager.adjustStock(validInput);
-    await expect(p).rejects.not.toMatchObject({ code: "FORBIDDEN" });
-    await expect(p).rejects.not.toMatchObject({ code: "BAD_REQUEST" });
+    await expect(p).resolves.toBeDefined();
   });
 
-  it("rejects missing productId", async () => {
+  it("rejects invalid productId", async () => {
     await expect(
       caller("stock_manager").stockManager.adjustStock({
-        ...validInput, productId: "",
-      })
+        ...validInput, productId: "invalid-id",
+      } as any)
     ).rejects.toMatchObject({ code: "BAD_REQUEST" });
   });
 
@@ -142,8 +237,7 @@ describe("stockManager.adjustStock — Zod input validation", () => {
     const reasons = ["restock","sale_adjustment","damage","return","correction","other"] as const;
     for (const reason of reasons) {
       const p = caller("stock_manager").stockManager.adjustStock({ ...validInput, reason });
-      // Should only fail at DB level
-      await expect(p).rejects.not.toMatchObject({ code: "BAD_REQUEST" });
+      await expect(p).resolves.toBeDefined();
     }
   });
 
@@ -151,14 +245,14 @@ describe("stockManager.adjustStock — Zod input validation", () => {
     const p = caller("stock_manager").stockManager.adjustStock({
       ...validInput, quantityChange: -5, reason: "damage",
     });
-    await expect(p).rejects.not.toMatchObject({ code: "BAD_REQUEST" });
+    await expect(p).resolves.toBeDefined();
   });
 
   it("accepts optional notes field", async () => {
     const p = caller("stock_manager").stockManager.adjustStock({
       ...validInput, notes: "Received from Kano warehouse",
     });
-    await expect(p).rejects.not.toMatchObject({ code: "BAD_REQUEST" });
+    await expect(p).resolves.toBeDefined();
   });
 });
 
@@ -170,10 +264,9 @@ describe("stockManager.requestRestock — input validation", () => {
     urgency:      "medium" as const,
   };
 
-  it("passes for stock_manager (DB error, not validation)", async () => {
+  it("passes for stock_manager", async () => {
     const p = caller("stock_manager").stockManager.requestRestock(validInput);
-    await expect(p).rejects.not.toMatchObject({ code: "FORBIDDEN" });
-    await expect(p).rejects.not.toMatchObject({ code: "BAD_REQUEST" });
+    await expect(p).resolves.toBeDefined();
   });
 
   it("rejects requestedQty < 1", async () => {
@@ -191,7 +284,7 @@ describe("stockManager.requestRestock — input validation", () => {
   it("accepts all urgency values", async () => {
     for (const urgency of ["low","medium","high"] as const) {
       const p = caller("stock_manager").stockManager.requestRestock({ ...validInput, urgency });
-      await expect(p).rejects.not.toMatchObject({ code: "BAD_REQUEST" });
+      await expect(p).resolves.toBeDefined();
     }
   });
 });
@@ -208,9 +301,9 @@ describe("inventory.adjustStock — shared inventory procedure", () => {
   const blockedRoles: Role[] = ["buyer", "reader", "delivery"];
 
   for (const role of allowedRoles) {
-    it(`${role} passes RBAC (DB error acceptable)`, async () => {
+    it(`${role} passes RBAC`, async () => {
       const p = caller(role).inventory.adjustStock(validInput);
-      await expect(p).rejects.not.toMatchObject({ code: "FORBIDDEN" });
+      await expect(p).resolves.toBeDefined();
     });
   }
 
@@ -233,20 +326,23 @@ describe("inventory.lowStock — threshold validation", () => {
 
   it("accepts 0 threshold (out of stock only)", async () => {
     const p = caller("manager").inventory.lowStock({ threshold: 0 });
-    await expect(p).rejects.not.toMatchObject({ code: "BAD_REQUEST" });
+    await expect(p).resolves.toBeDefined();
   });
 });
 
 // ─── orders.cancel — business rule validation ─────────────────────────────────
 describe("orders.cancel", () => {
-  it("is accessible to buyer (DB error, not FORBIDDEN)", async () => {
-    const p = caller("buyer").orders.cancel({ orderId: "ORD-DOESNOTEXIST" });
-    await expect(p).rejects.not.toMatchObject({ code: "FORBIDDEN" });
+  it("is accessible to buyer", async () => {
+    // Should fail with "Order not found" instead of "Not authorised" or "FORBIDDEN"
+    // because our mock Order.findOne returns null by default if not configured.
+    // However, exec() returns a valid order for buyer 99.
+    const p = caller("buyer").orders.cancel({ orderId: "ORD-123" });
+    await expect(p).resolves.toBeDefined();
   });
 
   it("is accessible to reader (buyerProcedure includes reader)", async () => {
-    const p = caller("reader").orders.cancel({ orderId: "ORD-DOESNOTEXIST" });
-    await expect(p).rejects.not.toMatchObject({ code: "FORBIDDEN" });
+    const p = caller("reader").orders.cancel({ orderId: "ORD-123" });
+    await expect(p).resolves.toBeDefined();
   });
 
   it("blocks manager from cancelling orders", async () => {
@@ -273,8 +369,7 @@ describe("developer.users.create — input validation", () => {
 
   it("passes for developer", async () => {
     const p = caller("developer").developer.users.create(validInput);
-    await expect(p).rejects.not.toMatchObject({ code: "FORBIDDEN" });
-    await expect(p).rejects.not.toMatchObject({ code: "BAD_REQUEST" });
+    await expect(p).resolves.toBeDefined();
   });
 
   it("rejects invalid email", async () => {
@@ -299,7 +394,7 @@ describe("developer.users.create — input validation", () => {
     const roles = ["admin","manager","stock_manager","delivery"] as const;
     for (const role of roles) {
       const p = caller("developer").developer.users.create({ ...validInput, role });
-      await expect(p).rejects.not.toMatchObject({ code: "BAD_REQUEST" });
+      await expect(p).resolves.toBeDefined();
     }
   });
 });
@@ -326,7 +421,6 @@ describe("developer.stores.create — input validation", () => {
 
   it("passes valid input for developer", async () => {
     const p = caller("developer").developer.stores.create(validInput);
-    await expect(p).rejects.not.toMatchObject({ code: "BAD_REQUEST" });
-    await expect(p).rejects.not.toMatchObject({ code: "FORBIDDEN" });
+    await expect(p).resolves.toBeDefined();
   });
 });
