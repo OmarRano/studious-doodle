@@ -73,12 +73,14 @@ export function getSessionToken(req: Request): string | undefined {
 }
 
 /** Consistent cookie options for Set-Cookie. */
-export function getSessionCookieOptions(_req: Request) {
+export function getSessionCookieOptions(req: Request) {
   const isProduction = process.env.NODE_ENV === "production";
+  const isSecure = isProduction || req.protocol === "https" || req.headers["x-forwarded-proto"] === "https";
+
   return {
     httpOnly: true,
-    secure: isProduction,
-    sameSite: (isProduction ? "strict" : "lax") as "strict" | "lax",
+    secure: isSecure,
+    sameSite: (isSecure ? "strict" : "lax") as "strict" | "lax",
     maxAge: ONE_YEAR_MS,
     path: "/",
   };

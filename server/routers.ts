@@ -27,6 +27,7 @@ import { Order } from "./models/Order";
 import { CartItem } from "./models/CartItem";
 import { User } from "./models/User";
 import { Store } from "./models/Store";
+import { paymentRouter } from "./payment-router";
 import { calcFinalPrice, calcOrderTotals } from "./pricing";
 
 const paginationInput = z.object({
@@ -36,6 +37,7 @@ const paginationInput = z.object({
 
 export const appRouter = router({
   auth: authRouter,
+  payment: paymentRouter,
 
   // ── PRODUCTS ─────────────────────────────────────────────────────────────────
   products: router({
@@ -294,7 +296,9 @@ export const appRouter = router({
       .mutation(async ({ input, ctx }) => {
         const order = await getOrderByOrderId(input.orderId);
         if (!order) throw new Error("Order not found");
-        if ((order as any).buyerId.toString() !== (ctx.user as any)._id.toString())
+
+        const buyerId = (order as any).buyerId?._id || (order as any).buyerId;
+        if (!buyerId || buyerId.toString() !== (ctx.user as any)._id.toString())
           throw new Error("Not authorised to cancel this order");
         if (!["pending", "paid"].includes(order.status))
           throw new Error("Order cannot be cancelled at this stage");
@@ -412,7 +416,9 @@ export const appRouter = router({
       ),
     adjustStock: inventoryProcedure
       .input(z.object({
-        productId:      z.string(),
+        productId:      z.string().refine((val) => mongoose.Types.ObjectId.isValid(val), {
+          message: "Invalid Product ID format",
+        }),
         quantityChange: z.number(),
         reason:         z.enum(["restock","sale_adjustment","damage","return","correction","other"]),
         notes:          z.string().optional(),
@@ -467,7 +473,9 @@ export const appRouter = router({
       ),
     adjustStock: stockManagerProcedure
       .input(z.object({
-        productId:      z.string(),
+        productId:      z.string().refine((val) => mongoose.Types.ObjectId.isValid(val), {
+          message: "Invalid Product ID format",
+        }),
         quantityChange: z.number(),
         reason:         z.enum(["restock","sale_adjustment","damage","return","correction","other"]),
         notes:          z.string().optional(),
