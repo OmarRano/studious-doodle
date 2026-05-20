@@ -8,6 +8,8 @@ import { Switch, Route } from "wouter";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/_core/contexts/AuthContext";
 import RoleBasedNavbar from "@/components/RoleBasedNavbar";
+import { CartProvider } from "@/contexts/CartContext";
+import { WishlistProvider } from "@/contexts/WishlistContext";
 
 // Public
 import Home         from "@/pages/Home";
@@ -15,13 +17,16 @@ import Auth         from "@/pages/Auth";
 import NotFound     from "@/pages/NotFound";
 import ProductDetail from "@/pages/ProductDetail";
 import BuildingView from "@/pages/BuildingView";
-import StorePage    from "@/pages/StorePage";
+import StoreDetail  from "@/pages/StoreDetail";
+
+// Cart Flow
+import Cart          from "@/pages/Cart";
+import Checkout      from "@/pages/Checkout";
+import PaymentSuccess from "@/pages/PaymentSuccess";
 
 // Buyer
 import ProductCatalog from "@/pages/buyer/ProductCatalog";
 import BuyerDashboard from "@/pages/buyer/BuyerDashboard";
-import Cart           from "@/pages/buyer/Cart";
-import Checkout       from "@/pages/buyer/Checkout";
 import OrderHistory   from "@/pages/buyer/OrderHistory";
 import OrderTracking  from "@/pages/buyer/OrderTracking";
 import BuyerProfile   from "@/pages/buyer/BuyerProfile";
@@ -64,24 +69,28 @@ import InventoryHistory      from "@/pages/stockmanager/InventoryHistory";
 export default function App() {
   return (
     <AuthProvider>
-      <Toaster richColors position="top-right" />
-      <RoleBasedNavbar />
+      <WishlistProvider>
+        <CartProvider>
+          <Toaster richColors position="top-right" />
+          <RoleBasedNavbar />
 
-      {/* pt-20 so navbar doesn't cover page content */}
-      <div style={{ paddingTop: 80 }}>
-        <Switch>
+          {/* pt-20 so navbar doesn't cover page content */}
+          <div style={{ paddingTop: 80 }}>
+          <Switch>
           {/* Public */}
           <Route path="/"             component={Home} />
           <Route path="/auth"         component={Auth} />
           <Route path="/mall"         component={BuildingView} />
-          <Route path="/store/:id"    component={StorePage} />
+          <Route path="/store/:id"    component={StoreDetail} />
           <Route path="/products/:id" component={ProductDetail} />
           <Route path="/products">    <ProductCatalog /></Route>
 
-          {/* Buyer */}
-          <Route path="/buyer">       <BuyerDashboard /></Route>
           <Route path="/cart">        <Cart /></Route>
           <Route path="/checkout">    <Checkout /></Route>
+          <Route path="/payment-success"> <PaymentSuccess /></Route>
+
+          {/* Buyer */}
+          <Route path="/buyer">       <BuyerDashboard /></Route>
           <Route path="/orders">      <OrderHistory /></Route>
           <Route path="/orders/:id">  <OrderTracking /></Route>
           <Route path="/profile">     <BuyerProfile /></Route>
@@ -122,6 +131,8 @@ export default function App() {
           <Route component={NotFound} />
         </Switch>
       </div>
+        </CartProvider>
+      </WishlistProvider>
     </AuthProvider>
   );
 }

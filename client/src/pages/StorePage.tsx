@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import ProductCard from '@/components/ProductCard';
+import { useWishlist } from '@/contexts/WishlistContext';
 
 interface Store {
   _id: string;
@@ -30,8 +31,9 @@ interface Store {
 export default function StorePage() {
   const params = useParams<{ id: string }>();
   const [, navigate] = useLocation();
+  const wishlist = useWishlist();
 
-  const { data: store, isLoading } = trpc.stores.detail.useQuery({ id: id! });
+  const { data: store, isLoading } = trpc.stores.detail.useQuery({ id: params.id! });
 
   if (isLoading) return <div className="flex justify-center items-center h-screen">Loading store...</div>;
   if (!store) return <div className="text-center py-12">Store not found</div>;
@@ -143,7 +145,9 @@ export default function StorePage() {
                 <ProductCard
                   key={product._id}
                   product={product}
-                  onClick={() => navigate(`/product/${product._id}`)}
+                  onClick={() => navigate(`/products/${product._id}`)}
+                  isWishlisted={wishlist.isWishlisted(product._id)}
+                  onToggleWishlist={() => wishlist.toggleWishlist(product._id)}
                 />
               ))}
             </div>

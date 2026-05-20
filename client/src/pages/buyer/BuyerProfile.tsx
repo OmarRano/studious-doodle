@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { useAuth } from "@/_core/hooks/useAuth";
-import DashboardHeader from "@/components/DashboardHeader";
+// import DashboardHeader from "@/components/DashboardHeader";
 import {
   User, Mail, Phone, Shield, Edit2, Save, MapPin,
   Lock, CheckCircle, Star,
@@ -98,7 +98,7 @@ export default function BuyerProfile() {
 
   return (
     <div style={{ fontFamily: "'Outfit', system-ui, sans-serif", background: "#f8f6f0", minHeight: "100vh" }}>
-      <DashboardHeader title="My Profile" subtitle="Manage your account details" />
+      {/* <DashboardHeader title="My Profile" subtitle="Manage your account details" /> */}
 
       <div style={{ maxWidth: 720, margin: "0 auto", padding: "24px 20px" }}>
 

@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useLocation } from "wouter";
 import { Package, ArrowRight, ShoppingBag } from "lucide-react";
-import DashboardHeader from "@/components/DashboardHeader";
+// import DashboardHeader from "@/components/DashboardHeader";
 
 const statusColor: Record<string, string> = {
   pending: "bg-yellow-100 text-yellow-700",
@@ -21,7 +21,7 @@ export default function OrderHistory() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <DashboardHeader title="Order History" subtitle="Track all your past and current orders" />
+      {/* <DashboardHeader title="Order History" subtitle="Track all your past and current orders" /> */}
       <main className="container mx-auto px-4 py-8">
         {isLoading ? (
           <div className="flex justify-center py-16"><div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600" /></div>

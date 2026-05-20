@@ -1,7 +1,7 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ShoppingCart } from 'lucide-react';
+import { Heart, ShoppingCart } from 'lucide-react';
 
 interface Product {
   _id: string;
@@ -17,9 +17,12 @@ interface Product {
 interface ProductCardProps {
   product: Product;
   onClick: () => void;
+  onAddToCart?: (product: Product) => void;
+  isWishlisted?: boolean;
+  onToggleWishlist?: (productId: string) => void;
 }
 
-export default function ProductCard({ product, onClick }: ProductCardProps) {
+export default function ProductCard({ product, onClick, onAddToCart, isWishlisted, onToggleWishlist }: ProductCardProps) {
   const imageUrl = product.images?.[0] || 'https://via.placeholder.com/300x200?text=No+Image';
 
   return (
@@ -27,7 +30,20 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
       className="cursor-pointer hover:shadow-lg transition-all duration-300 overflow-hidden group"
       onClick={onClick}
     >
-      <div className="aspect-square bg-slate-100 overflow-hidden">
+      <div className="relative aspect-square bg-slate-100 overflow-hidden">
+        <button
+          type="button"
+          className="absolute top-3 right-3 z-10 rounded-full bg-white/90 p-2 shadow-sm transition hover:bg-white"
+          onClick={(e) => {
+            e.stopPropagation();
+            if (onToggleWishlist) {
+              onToggleWishlist(product._id);
+            }
+          }}
+        >
+          <Heart className={`w-5 h-5 ${isWishlisted ? 'text-red-500' : 'text-slate-400 hover:text-red-500'}`} />
+        </button>
+
         <img
           src={imageUrl}
           alt={product.name}
@@ -62,8 +78,9 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
           className="w-full mt-3 opacity-0 group-hover:opacity-100 transition-opacity"
           onClick={(e) => {
             e.stopPropagation();
-            // TODO: Add to cart functionality
-            console.log('Add to cart:', product._id);
+            if (onAddToCart) {
+              onAddToCart(product);
+            }
           }}
         >
           <ShoppingCart className="w-4 h-4 mr-2" />
