@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLocation, useParams } from "wouter";
 import { ArrowLeft, MapPin, Phone, Package, Truck, CheckCircle, Clock, User } from "lucide-react";
 import { toast } from "sonner";
-import DashboardHeader from "@/components/DashboardHeader";
+// import DashboardHeader from "@/components/DashboardHeader";
 
 export default function OrderDeliveryTracking() {
   const { orderId } = useParams<{ orderId: string }>();
@@ -22,7 +22,7 @@ export default function OrderDeliveryTracking() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <DashboardHeader title="Order Details" subtitle="Track and update delivery status" />
+      {/* <DashboardHeader title="Order Details" subtitle="Track and update delivery status" /> */}
       <main className="container mx-auto px-4 py-8 max-w-2xl">
         <Button variant="ghost" onClick={() => navigate("/delivery/orders")} className="mb-6 gap-2 pl-0">
           <ArrowLeft className="w-4 h-4" /> Back to Orders

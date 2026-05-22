@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useLocation, useParams } from "wouter";
 import { ArrowLeft, Package, CheckCircle, Truck, MapPin, Clock, XCircle } from "lucide-react";
-import DashboardHeader from "@/components/DashboardHeader";
+// import DashboardHeader from "@/components/DashboardHeader";
 
 const steps = [
   { key: "pending", label: "Order Placed", icon: Clock, desc: "Your order has been received" },
@@ -25,7 +25,7 @@ export default function OrderTracking() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <DashboardHeader title="Order Tracking" subtitle="Real-time status of your order" />
+      {/* <DashboardHeader title="Order Tracking" subtitle="Real-time status of your order" /> */}
       <main className="container mx-auto px-4 py-8 max-w-2xl">
         <Button variant="ghost" onClick={() => navigate("/orders")} className="mb-6 gap-2 pl-0">
           <ArrowLeft className="w-4 h-4" /> Back to Orders

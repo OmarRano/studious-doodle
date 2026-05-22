@@ -1,6 +1,6 @@
 import { trpc } from "@/lib/trpc";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import DashboardHeader from "@/components/DashboardHeader";
+// import DashboardHeader from "@/components/DashboardHeader";
 import { DollarSign, TrendingUp, Users, Award } from "lucide-react";
 
 export default function EarningsHistory() {
@@ -13,7 +13,7 @@ export default function EarningsHistory() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <DashboardHeader title="Earnings History" subtitle="Your affiliate commission overview" />
+      {/* <DashboardHeader title="Earnings History" subtitle="Your affiliate commission overview" /> */}
       <main className="container mx-auto px-4 py-8">
         {isLoading ? (
           <div className="flex justify-center py-16"><div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600" /></div>

@@ -149,13 +149,15 @@ export async function getDeliveryOrders(
 // ─── Platform stats ──────────────────────────────────────────────────────────
 
 export async function getPlatformStats() {
-  const [totalUsers, totalBuyers, totalProducts, totalOrders, deliveredOrders] =
+  const [totalUsers, totalBuyers, totalProducts, totalOrders, deliveredOrders, activeUsers, suspendedAccounts] =
     await Promise.all([
       User.countDocuments(),
       User.countDocuments({ role: "buyer" }),
       Product.countDocuments({ isActive: true }),
       Order.countDocuments(),
       Order.countDocuments({ status: "delivered" }),
+      User.countDocuments({ isActive: true }),
+      User.countDocuments({ isActive: false }),
     ]);
 
   const revenueAgg = await Order.aggregate([
@@ -164,12 +166,25 @@ export async function getPlatformStats() {
   ]);
   const totalRevenue = revenueAgg[0]?.total ?? 0;
 
-  return { totalUsers, totalBuyers, totalProducts, totalOrders, deliveredOrders, totalRevenue };
+  return {
+    totalUsers,
+    totalBuyers,
+    totalProducts,
+    totalOrders,
+    deliveredOrders,
+    totalRevenue,
+    activeUsers,
+    suspendedAccounts,
+    pendingApprovals: 0,
+  };
 }
 
 export async function getTotalSalesStats() {
-  return Order.aggregate([
-    { $match: { paymentStatus: "paid" } },
+  const now = new Date();
+  const firstMonth = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+
+  const salesAgg = await Order.aggregate([
+    { $match: { paymentStatus: "paid", createdAt: { $gte: firstMonth } } },
     {
       $group: {
         _id: { year: { $year: "$createdAt" }, month: { $month: "$createdAt" } },
@@ -179,4 +194,115 @@ export async function getTotalSalesStats() {
     },
     { $sort: { "_id.year": 1, "_id.month": 1 } },
   ]);
+
+  const statusAgg = await Order.aggregate([
+    {
+      $group: {
+        _id: "$status",
+        count: { $sum: 1 },
+      },
+    },
+  ]);
+
+  const totalRevenue = salesAgg.reduce((sum, item) => sum + (item.revenue ?? 0), 0);
+  const revenueTrend = Array.from({ length: 6 }, (_, index) => {
+    const date = new Date(now.getFullYear(), now.getMonth() - (5 - index), 1);
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const label = date.toLocaleString("en-US", { month: "short" });
+    const match = salesAgg.find((item) => item._id.year === year && item._id.month === month);
+    return {
+      month: label,
+      revenue: match?.revenue ?? 0,
+      orders: match?.orders ?? 0,
+    };
+  });
+
+  const statusMap = statusAgg.reduce<Record<string, number>>((acc, item) => {
+    acc[item._id] = item.count ?? 0;
+    return acc;
+  }, {});
+
+  return {
+    revenueTrend,
+    totalRevenue,
+    totalOrders: statusAgg.reduce((sum, item) => sum + item.count, 0),
+    pendingOrders: statusMap.pending ?? 0,
+    processingOrders: statusMap.processing ?? 0,
+    assignedOrders: statusMap.assigned ?? 0,
+    inTransitOrders: statusMap.in_transit ?? 0,
+    deliveredOrders: statusMap.delivered ?? 0,
+    cancelledOrders: statusMap.cancelled ?? 0,
+  };
+}
+
+export async function getInventorySummary(threshold = 10) {
+  const [totalProducts, activeProducts, inactiveProducts, lowStockItems, totalStockValueAgg] = await Promise.all([
+    Product.countDocuments(),
+    Product.countDocuments({ isActive: true }),
+    Product.countDocuments({ isActive: false }),
+    Product.countDocuments({ isActive: true, stockQuantity: { $lte: threshold } }),
+    Product.aggregate([
+      {
+        $match: { isActive: true },
+      },
+      {
+        $group: {
+          _id: null,
+          totalValue: { $sum: { $multiply: ["$stockQuantity", "$baseSalePrice"] } },
+        },
+      },
+    ]),
+  ]);
+
+  return {
+    totalProducts,
+    activeProducts,
+    inactiveProducts,
+    lowStockItems,
+    totalStockValue: totalStockValueAgg[0]?.totalValue ?? 0,
+  };
+}
+
+export async function getWeeklySalesStats(days = 7) {
+  const now = new Date();
+  const start = new Date(now);
+  start.setHours(0, 0, 0, 0);
+  start.setDate(start.getDate() - (days - 1));
+
+  const salesAgg = await Order.aggregate([
+    { $match: { paymentStatus: "paid", createdAt: { $gte: start } } },
+    {
+      $group: {
+        _id: {
+          year: { $year: "$createdAt" },
+          month: { $month: "$createdAt" },
+          day: { $dayOfMonth: "$createdAt" },
+        },
+        revenue: { $sum: "$finalAmount" },
+        orders: { $sum: 1 },
+      },
+    },
+    { $sort: { "_id.year": 1, "_id.month": 1, "_id.day": 1 } },
+  ]);
+
+  const trend = Array.from({ length: days }, (_, index) => {
+    const date = new Date(start);
+    date.setDate(start.getDate() + index);
+    const label = date.toLocaleDateString("en-US", { weekday: "short" });
+    const match = salesAgg.find((item) =>
+      item._id.year === date.getFullYear() && item._id.month === date.getMonth() + 1 && item._id.day === date.getDate()
+    );
+    return {
+      day: label,
+      revenue: match?.revenue ?? 0,
+      orders: match?.orders ?? 0,
+    };
+  });
+
+  return {
+    totalRevenue: trend.reduce((sum, item) => sum + item.revenue, 0),
+    totalOrders: trend.reduce((sum, item) => sum + item.orders, 0),
+    trend,
+  };
 }

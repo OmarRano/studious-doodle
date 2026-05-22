@@ -38,7 +38,7 @@ export default function StorePage() {
   if (isLoading) return <div className="flex justify-center items-center h-screen">Loading store...</div>;
   if (!store) return <div className="text-center py-12">Store not found</div>;
 
-  const typedStore = store as Store;
+  const typedStore = store as unknown as Store;
 
   return (
     <div className="min-h-screen bg-slate-50">

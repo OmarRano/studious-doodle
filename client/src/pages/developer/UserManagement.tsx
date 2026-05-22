@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import DashboardHeader from "@/components/DashboardHeader";
+// import DashboardHeader from "@/components/DashboardHeader";
 import { Search, Users, Shield, ToggleLeft, ToggleRight, ChevronDown } from "lucide-react";
 
 const ROLES = ["buyer", "manager", "delivery", "reader", "admin", "developer"];
@@ -44,7 +44,7 @@ export default function UserManagement() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <DashboardHeader title="User Management" subtitle="Manage roles and affiliate status" />
+      {/* <DashboardHeader title="User Management" subtitle="Manage roles and affiliate status" /> */}
       <main className="container mx-auto px-4 py-8">
 
         <div className="flex flex-col sm:flex-row gap-3 mb-6">

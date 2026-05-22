@@ -19,7 +19,8 @@ import {
   getCartItems, addToCart, removeFromCart, clearCart,
   getUserOrders, getOrderByOrderId, getDeliveryOrders,
   getAllCategories, getFeaturedProducts, getAllUsers,
-  getTotalSalesStats, getPlatformStats, updateUserRole, setUserAffiliate,
+  getTotalSalesStats, getPlatformStats, getInventorySummary, getWeeklySalesStats,
+  updateUserRole, setUserAffiliate,
 } from "./db";
 import { Product } from "./models/Product";
 import { Category } from "./models/Category";
@@ -45,6 +46,11 @@ export const appRouter = router({
       .input(paginationInput)
       .query(async ({ input }) =>
         Product.find({ isActive: true }).populate("categoryId").skip(input.offset).limit(input.limit).lean()
+      ),
+    listAll: managerProcedure
+      .input(paginationInput)
+      .query(async ({ input }) =>
+        Product.find().populate("categoryId").skip(input.offset).limit(input.limit).lean()
       ),
     featured: publicProcedure.query(() => getFeaturedProducts(10)),
     byCategory: publicProcedure
@@ -438,6 +444,8 @@ export const appRouter = router({
         Product.find({ stockQuantity: { $lte: input.threshold }, isActive: true })
           .populate("categoryId", "name").lean()
       ),
+    summary: inventoryProcedure.query(async () => getInventorySummary()),
+    weeklySales: inventoryProcedure.query(async () => getWeeklySalesStats(7)),
     recentActivity: inventoryProcedure
       .input(paginationInput)
       .query(async ({ input }) =>

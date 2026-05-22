@@ -1,5 +1,5 @@
 import { useState } from "react";
-import DashboardHeader from "@/components/DashboardHeader";
+// import DashboardHeader from "@/components/DashboardHeader";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -31,9 +31,20 @@ export default function LowStockAlerts() {
   const alertsQuery = trpc.stockManager?.lowStockAlerts?.useQuery({ threshold }, { retry: false });
   const products    = alertsQuery?.data ?? MOCK_ALERTS;
 
+  const utils = trpc.useContext();
+
   const restockMutation = trpc.stockManager?.requestRestock?.useMutation?.({
-    onSuccess: () => {},
-    onError:   (e: any) => toast.error(e.message),
+    onSuccess: () => {
+      toast.success("Restock request submitted");
+      alertsQuery?.refetch?.();
+      utils?.stockManager?.lowStockAlerts?.invalidate?.();
+      utils?.stockManager?.summary?.invalidate?.();
+      utils?.inventory?.lowStock?.invalidate?.();
+      utils?.inventory?.summary?.invalidate?.();
+      utils?.products?.listAll?.invalidate?.();
+      utils?.inventory?.recentActivity?.invalidate?.();
+    },
+    onError: (e: any) => toast.error(e.message),
   });
 
   const displayed = products.filter((p: any) => {
@@ -78,7 +89,7 @@ export default function LowStockAlerts() {
 
   return (
     <div style={{ fontFamily: "'Outfit', system-ui, sans-serif", background: "#f8f6f0", minHeight: "100vh" }}>
-      <DashboardHeader title="Low Stock Alerts" subtitle="Products needing restock" role="stock_manager" />
+      {/* <DashboardHeader title="Low Stock Alerts" subtitle="Products needing restock" role="stock_manager" /> */}
 
       <div style={{ maxWidth: 1000, margin: "0 auto", padding: "24px 20px" }}>
 

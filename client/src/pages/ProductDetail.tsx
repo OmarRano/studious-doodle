@@ -48,7 +48,7 @@ export default function ProductDetail() {
               <div className="flex flex-col gap-4">
                 <div className="flex flex-wrap items-center gap-3">
                   <Tag className="w-5 h-5 text-amber-300" />
-                  <span className="text-sm uppercase tracking-[0.24em] text-amber-200">{product?.categoryId?.name ?? "Marketplace"}</span>
+                  <span className="text-sm uppercase tracking-[0.24em] text-amber-200">{(product?.categoryId as any)?.name ?? "Marketplace"}</span>
                 </div>
                 <h1 className="text-4xl font-bold leading-tight">{product?.name ?? "Loading product..."}</h1>
                 <p className="max-w-2xl text-slate-300">{product?.description ?? "Fetching details from the mall catalogue."}</p>
@@ -114,11 +114,11 @@ export default function ProductDetail() {
             <div className="space-y-4 mt-4">
               <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
                 <p className="text-sm text-slate-500">Product code</p>
-                <p className="font-semibold text-slate-900">{product?._id ?? "N/A"}</p>
+                <p className="font-semibold text-slate-900">{String(product?._id ?? "N/A")}</p>
               </div>
               <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
                 <p className="text-sm text-slate-500">Category</p>
-                <p className="font-semibold text-slate-900">{product?.categoryId?.name ?? "General"}</p>
+                <p className="font-semibold text-slate-900">{(product?.categoryId as any)?.name ?? "General"}</p>
               </div>
               <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
                 <p className="text-sm text-slate-500">Buyer note</p>

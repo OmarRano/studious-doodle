@@ -2,7 +2,7 @@ import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import DashboardHeader from "@/components/DashboardHeader";
+// import DashboardHeader from "@/components/DashboardHeader";
 import { Link2, Copy, Share2, ExternalLink, Users } from "lucide-react";
 
 export default function ReferralManagement() {
@@ -23,7 +23,7 @@ export default function ReferralManagement() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <DashboardHeader title="Referral Management" subtitle="Share your link and grow your earnings" />
+      {/* <DashboardHeader title="Referral Management" subtitle="Share your link and grow your earnings" /> */}
       <main className="container mx-auto px-4 py-8 max-w-2xl">
         {isLoading ? (
           <div className="flex justify-center py-16"><div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600" /></div>

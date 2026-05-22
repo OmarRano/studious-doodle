@@ -1,20 +1,54 @@
-import DashboardHeader from "@/components/DashboardHeader";
+// import DashboardHeader from "@/components/DashboardHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
-import { Truck, MapPin, CheckCircle, Clock } from "lucide-react";
+import { Truck, MapPin, CheckCircle, Clock, ArrowRight, RefreshCw } from "lucide-react";
+import { trpc } from "@/lib/trpc";
 
 export default function DeliveryDashboard() {
   const [, navigate] = useLocation();
+  const utils = trpc.useUtils();
+
+  const ordersQuery = trpc.delivery.myOrders.useQuery({ limit: 200, offset: 0 }, { retry: false });
+  const orders = (ordersQuery?.data as any[]) ?? [];
+
+  const now = new Date();
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const startOfWeek = new Date(now);
+  startOfWeek.setDate(now.getDate() - 6);
+  startOfWeek.setHours(0, 0, 0, 0);
+
+  const assignedToday = orders.filter((o: any) => o.status === 'assigned' && new Date(o.createdAt) >= startOfToday).length;
+  const inTransitCount = orders.filter((o: any) => o.status === 'in_transit').length;
+  const completedThisWeek = orders.filter((o: any) => o.status === 'delivered' && new Date(o.createdAt) >= startOfWeek).length;
+  const pendingCount = orders.filter((o: any) => o.status === 'pending').length;
+
+  // Earnings: sum commissionAmount for orders (paid)
+  const todaysEarnings = orders
+    .filter((o: any) => new Date(o.createdAt) >= startOfToday && o.paymentStatus === 'paid')
+    .reduce((s: number, o: any) => s + (o.commissionAmount ?? 0), 0);
+  const weekEarnings = orders
+    .filter((o: any) => new Date(o.createdAt) >= startOfWeek && o.paymentStatus === 'paid')
+    .reduce((s: number, o: any) => s + (o.commissionAmount ?? 0), 0);
+
+  const refresh = () => {
+    ordersQuery?.refetch?.();
+    utils.delivery.myOrders.invalidate();
+  };
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <DashboardHeader
+      {/* <DashboardHeader
         title="Delivery Dashboard"
         subtitle="Manage your deliveries and track orders"
-      />
+      /> */}
 
       <main className="container mx-auto px-4 py-8">
+        <div className="flex justify-end mb-4">
+          <Button size="sm" onClick={refresh} className="gap-2">
+            <RefreshCw className="w-4 h-4" /> Refresh
+          </Button>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card className="border-0 shadow-md">
             <CardHeader className="pb-3">
@@ -85,16 +119,18 @@ export default function DeliveryDashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                <div className="p-3 bg-slate-50 rounded-lg">
-                  <p className="font-medium">Order #001</p>
-                  <p className="text-sm text-slate-600">Destination: Lekki, Lagos</p>
-                  <p className="text-sm text-amber-600">In Transit</p>
-                </div>
-                <div className="p-3 bg-slate-50 rounded-lg">
-                  <p className="font-medium">Order #002</p>
-                  <p className="text-sm text-slate-600">Destination: Ikoyi, Lagos</p>
-                  <p className="text-sm text-amber-600">In Transit</p>
-                </div>
+                {orders.filter((o: any) => o.status === 'in_transit').slice(0,5).map((o: any) => (
+                  <div key={o._id} className="p-3 bg-slate-50 rounded-lg">
+                    <p className="font-medium">#{o.orderId}</p>
+                    <p className="text-sm text-slate-600">Destination: {[o.shippingAddress, o.shippingCity, o.shippingState].filter(Boolean).join(', ')}</p>
+                    <p className="text-sm text-amber-600">In Transit</p>
+                    <div className="mt-2">
+                      <Button size="sm" variant="outline" onClick={() => navigate(`/delivery/order/${o.orderId}/track`)} className="gap-2">
+                        Track <ArrowRight className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
               </div>
               <Button onClick={() => navigate("/delivery/orders")} className="w-full mt-4">
                 View All Orders
@@ -111,11 +147,11 @@ export default function DeliveryDashboard() {
               <div className="space-y-3">
                 <div>
                   <p className="text-sm text-slate-600">Today's Earnings</p>
-                  <p className="text-2xl font-bold text-green-600">₦5,200</p>
+                  <p className="text-2xl font-bold text-green-600">₦{todaysEarnings.toLocaleString()}</p>
                 </div>
                 <div>
                   <p className="text-sm text-slate-600">This Week</p>
-                  <p className="text-2xl font-bold text-slate-900">₦28,500</p>
+                  <p className="text-2xl font-bold text-slate-900">₦{weekEarnings.toLocaleString()}</p>
                 </div>
               </div>
             </CardContent>

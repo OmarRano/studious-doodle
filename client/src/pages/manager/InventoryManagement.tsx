@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import DashboardHeader from "@/components/DashboardHeader";
+// import DashboardHeader from "@/components/DashboardHeader";
 import { AlertTriangle, Package, Plus, Minus, Search, TrendingDown } from "lucide-react";
 
 export default function InventoryManagement() {
@@ -17,12 +17,14 @@ export default function InventoryManagement() {
   const [adjustQty, setAdjustQty] = useState("");
   const [adjustReason, setAdjustReason] = useState("");
 
-  const { data: products, isLoading } = trpc.products.list.useQuery({ limit: 200, offset: 0 });
+  const { data: summary } = trpc.inventory.summary.useQuery();
+  const { data: products, isLoading } = trpc.products.listAll.useQuery({ limit: 200, offset: 0 });
   const { data: lowStock } = trpc.inventory.lowStock.useQuery({ threshold });
 
   const adjustMutation = trpc.inventory.adjustStock.useMutation({
     onSuccess: (data) => {
       utils.products.list.invalidate();
+      utils.products.listAll.invalidate();
       utils.inventory.lowStock.invalidate();
       toast.success(`Stock updated. New level: ${data.newStock}`);
       setAdjusting(null);
@@ -36,7 +38,7 @@ export default function InventoryManagement() {
     const qty = parseInt(adjustQty);
     if (!qty || qty <= 0) return toast.error("Enter a valid quantity");
     if (!adjustReason) return toast.error("Please enter a reason");
-    adjustMutation.mutate({ productId, quantityChange: qty * direction, reason: adjustReason });
+    adjustMutation.mutate({ productId, quantityChange: qty * direction, reason: adjustReason as any });
   };
 
   const allProducts = (products as any[]) ?? [];
@@ -46,8 +48,23 @@ export default function InventoryManagement() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <DashboardHeader title="Inventory Management" subtitle="Monitor and adjust stock levels" />
+      {/* <DashboardHeader title="Inventory Management" subtitle="Monitor and adjust stock levels" /> */}
       <main className="container mx-auto px-4 py-8">
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <Card className="border-0 shadow-sm p-4">
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Total Stock Value</p>
+            <p className="text-2xl font-bold text-slate-900 mt-2">₦{(summary?.totalStockValue ?? 0).toLocaleString()}</p>
+          </Card>
+          <Card className="border-0 shadow-sm p-4">
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Items Below Threshold</p>
+            <p className="text-2xl font-bold text-slate-900 mt-2">{summary?.lowStockItems ?? 0}</p>
+          </Card>
+          <Card className="border-0 shadow-sm p-4">
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Active Products</p>
+            <p className="text-2xl font-bold text-slate-900 mt-2">{summary?.activeProducts ?? 0}</p>
+          </Card>
+        </div>
 
         {/* Low Stock Alert */}
         {(lowStock as any[])?.length > 0 && (

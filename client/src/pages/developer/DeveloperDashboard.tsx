@@ -1,5 +1,5 @@
 import { useState } from "react";
-import DashboardHeader from "@/components/DashboardHeader";
+// import DashboardHeader from "@/components/DashboardHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -90,7 +90,7 @@ export default function DeveloperDashboard() {
 
   return (
     <div style={{ fontFamily: "'Outfit', system-ui, sans-serif", background: "#f8f6f0", minHeight: "100vh" }}>
-      <DashboardHeader title="Developer Dashboard" subtitle="Gimbiya Mall — Platform Architecture" role="developer" />
+      {/* <DashboardHeader title="Developer Dashboard" subtitle="Gimbiya Mall — Platform Architecture" role="developer" /> */}
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "24px 20px" }}>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 16, marginBottom: 28 }}>

@@ -1,37 +1,36 @@
-import DashboardHeader from "@/components/DashboardHeader";
+// import DashboardHeader from "@/components/DashboardHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { Package, AlertTriangle, TrendingUp, Plus } from "lucide-react";
+import { trpc } from "@/lib/trpc";
 
 export default function ManagerDashboard() {
   const [, navigate] = useLocation();
+  const summaryQuery = trpc.inventory.summary.useQuery();
+  const weeklySalesQuery = trpc.inventory.weeklySales.useQuery();
+  const productsQuery = trpc.products.listAll.useQuery({ limit: 12, offset: 0 });
 
-  const inventoryData = [
-    { product: "Product A", stock: 120, sold: 45 },
-    { product: "Product B", stock: 89, sold: 67 },
-    { product: "Product C", stock: 34, sold: 89 },
-    { product: "Product D", stock: 156, sold: 23 },
-    { product: "Product E", stock: 12, sold: 156 },
-  ];
+  const summary = summaryQuery.data as any;
+  const weeklySales = weeklySalesQuery.data as any;
+  const products = productsQuery.data as any[] ?? [];
+  const isLoading = summaryQuery.isLoading || weeklySalesQuery.isLoading || productsQuery.isLoading;
 
-  const salesData = [
-    { day: "Mon", sales: 400 },
-    { day: "Tue", sales: 300 },
-    { day: "Wed", sales: 200 },
-    { day: "Thu", sales: 278 },
-    { day: "Fri", sales: 190 },
-    { day: "Sat", sales: 229 },
-    { day: "Sun", sales: 200 },
-  ];
+  const inventoryData = products.map((product) => ({
+    product: product.name ?? "Unnamed",
+    stock: product.stockQuantity ?? 0,
+    sold: product.soldQuantity ?? 0,
+  })).slice(0, 8);
+
+  const salesData = weeklySales?.trend ?? [{ day: "Mon", revenue: 0 }, { day: "Tue", revenue: 0 }, { day: "Wed", revenue: 0 }, { day: "Thu", revenue: 0 }, { day: "Fri", revenue: 0 }, { day: "Sat", revenue: 0 }, { day: "Sun", revenue: 0 }];
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <DashboardHeader
+      {/* <DashboardHeader
         title="Store Manager Dashboard"
         subtitle="Manage products and inventory"
-      />
+      /> */}
 
       <main className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -42,8 +41,8 @@ export default function ManagerDashboard() {
             <CardContent>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-3xl font-bold text-slate-900">156</p>
-                  <p className="text-xs text-green-600 mt-1">+5 this week</p>
+                  <p className="text-3xl font-bold text-slate-900">{summary?.totalProducts?.toLocaleString() ?? "0"}</p>
+                  <p className="text-xs text-slate-500 mt-1">Active: {summary?.activeProducts?.toLocaleString() ?? "0"}</p>
                 </div>
                 <Package className="w-12 h-12 text-blue-500 opacity-20" />
               </div>
@@ -57,8 +56,8 @@ export default function ManagerDashboard() {
             <CardContent>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-3xl font-bold text-slate-900">8</p>
-                  <p className="text-xs text-red-600 mt-1">Require attention</p>
+                  <p className="text-3xl font-bold text-slate-900">{summary?.lowStockItems?.toLocaleString() ?? "0"}</p>
+                  <p className="text-xs text-red-600 mt-1">Items below threshold</p>
                 </div>
                 <AlertTriangle className="w-12 h-12 text-red-500 opacity-20" />
               </div>
@@ -72,8 +71,8 @@ export default function ManagerDashboard() {
             <CardContent>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-3xl font-bold text-slate-900">₦89K</p>
-                  <p className="text-xs text-green-600 mt-1">+12% from last week</p>
+                  <p className="text-3xl font-bold text-slate-900">₦{(weeklySales?.totalRevenue ?? 0).toLocaleString()}</p>
+                  <p className="text-xs text-slate-500 mt-1">{weeklySales?.totalOrders ?? 0} orders in 7 days</p>
                 </div>
                 <TrendingUp className="w-12 h-12 text-green-500 opacity-20" />
               </div>
@@ -112,9 +111,9 @@ export default function ManagerDashboard() {
                 <LineChart data={salesData}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="day" />
-                  <YAxis />
-                  <Tooltip />
-                  <Line type="monotone" dataKey="sales" stroke="#8b5cf6" strokeWidth={2} />
+                  <YAxis tickFormatter={(value) => `₦${(value / 1000).toFixed(0)}k`} />
+                  <Tooltip formatter={(value: any) => [`₦${Number(value).toLocaleString()}`, "Revenue"]} />
+                  <Line type="monotone" dataKey="revenue" stroke="#8b5cf6" strokeWidth={2} />
                 </LineChart>
               </ResponsiveContainer>
             </CardContent>
@@ -129,8 +128,8 @@ export default function ManagerDashboard() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <p className="text-sm text-slate-600">Active Products: <span className="font-bold">156</span></p>
-                <p className="text-sm text-slate-600">Inactive Products: <span className="font-bold">12</span></p>
+                <p className="text-sm text-slate-600">Active Products: <span className="font-bold">{summary?.activeProducts ?? 0}</span></p>
+                <p className="text-sm text-slate-600">Inactive Products: <span className="font-bold">{(summary?.totalProducts ?? 0) - (summary?.activeProducts ?? 0)}</span></p>
               </div>
               <Button onClick={() => navigate("/manager/products")} className="w-full">
                 <Plus className="w-4 h-4 mr-2" />
@@ -146,8 +145,8 @@ export default function ManagerDashboard() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <p className="text-sm text-slate-600">Total Stock Value: <span className="font-bold">₦2.3M</span></p>
-                <p className="text-sm text-slate-600">Items Below Threshold: <span className="font-bold text-red-600">8</span></p>
+                <p className="text-sm text-slate-600">Total Stock Value: <span className="font-bold">₦{(summary?.totalStockValue ?? 0).toLocaleString()}</span></p>
+                <p className="text-sm text-slate-600">Items Below Threshold: <span className="font-bold text-red-600">{summary?.lowStockItems ?? 0}</span></p>
               </div>
               <Button onClick={() => navigate("/manager/inventory")} variant="outline" className="w-full">
                 View Inventory

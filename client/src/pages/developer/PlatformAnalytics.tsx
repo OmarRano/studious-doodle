@@ -1,6 +1,6 @@
 import { trpc } from "@/lib/trpc";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import DashboardHeader from "@/components/DashboardHeader";
+// import DashboardHeader from "@/components/DashboardHeader";
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { Activity, Database, Users, ShoppingBag, TrendingUp, DollarSign, Package, Cpu } from "lucide-react";
 
@@ -33,7 +33,7 @@ export default function PlatformAnalytics() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <DashboardHeader title="Platform Analytics" subtitle="Full-system performance and revenue insights" />
+      {/* <DashboardHeader title="Platform Analytics" subtitle="Full-system performance and revenue insights" /> */}
       <main className="container mx-auto px-4 py-8">
         {isLoading ? (
           <div className="flex justify-center py-16"><div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600" /></div>

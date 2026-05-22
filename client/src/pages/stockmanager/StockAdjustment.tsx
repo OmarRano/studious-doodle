@@ -1,5 +1,5 @@
 import { useState } from "react";
-import DashboardHeader from "@/components/DashboardHeader";
+// import DashboardHeader from "@/components/DashboardHeader";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -44,9 +44,22 @@ export default function StockAdjustment() {
   const productsQuery = trpc.stockManager?.products?.useQuery({ limit: 50, offset: 0 }, { retry: false });
   const products      = productsQuery?.data ?? MOCK_PRODUCTS;
 
+  const utils = trpc.useContext();
+
   const adjustMutation = trpc.stockManager?.adjustStock?.useMutation?.({
-    onSuccess: () => {},
-    onError:   (e: any) => toast.error(e.message),
+    onSuccess: () => {
+      toast.success("Adjustment applied");
+      productsQuery?.refetch?.();
+      utils?.stockManager?.products?.invalidate?.();
+      utils?.stockManager?.summary?.invalidate?.();
+      utils?.stockManager?.lowStockAlerts?.invalidate?.();
+      utils?.inventory?.list?.invalidate?.();
+      utils?.inventory?.lowStock?.invalidate?.();
+      utils?.inventory?.summary?.invalidate?.();
+      utils?.inventory?.recentActivity?.invalidate?.();
+      utils?.products?.listAll?.invalidate?.();
+    },
+    onError: (e: any) => toast.error(e.message),
   });
 
   const filtered = products.filter((p: any) =>
@@ -107,7 +120,7 @@ export default function StockAdjustment() {
 
   return (
     <div style={{ fontFamily: "'Outfit', system-ui, sans-serif", background: "#f8f6f0", minHeight: "100vh" }}>
-      <DashboardHeader title="Stock Adjustment" subtitle="Adjust product stock levels" role="stock_manager" />
+      {/* <DashboardHeader title="Stock Adjustment" subtitle="Adjust product stock levels" role="stock_manager" /> */}
 
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "24px 20px" }}>
 

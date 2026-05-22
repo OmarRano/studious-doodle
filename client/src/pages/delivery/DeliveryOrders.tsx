@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import DashboardHeader from "@/components/DashboardHeader";
+// import DashboardHeader from "@/components/DashboardHeader";
 import { useLocation } from "wouter";
 import { Truck, MapPin, CheckCircle, Clock, Package, ArrowRight } from "lucide-react";
 
@@ -41,7 +41,7 @@ export default function DeliveryOrders() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <DashboardHeader title="My Orders" subtitle="View and manage your assigned deliveries" />
+      {/* <DashboardHeader title="My Orders" subtitle="View and manage your assigned deliveries" /> */}
       <main className="container mx-auto px-4 py-8">
 
         {/* Filter Tabs */}

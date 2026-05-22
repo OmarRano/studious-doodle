@@ -1,5 +1,5 @@
 import { trpc } from "@/lib/trpc";
-import DashboardHeader from "@/components/DashboardHeader";
+// import DashboardHeader from "@/components/DashboardHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
@@ -27,7 +27,7 @@ export default function AffiliateDashboard() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <DashboardHeader title="Affiliate Dashboard" subtitle="Track your referrals and commissions" />
+      {/* <DashboardHeader title="Affiliate Dashboard" subtitle="Track your referrals and commissions" /> */}
 
       <main className="container mx-auto px-4 py-8">
         {/* Stats */}

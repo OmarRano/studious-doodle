@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import DashboardHeader from "@/components/DashboardHeader";
+// import DashboardHeader from "@/components/DashboardHeader";
 import { Plus, Search, Edit2, Trash2, Package, ToggleLeft, ToggleRight } from "lucide-react";
 
 export default function ProductManagement() {
@@ -16,26 +16,30 @@ export default function ProductManagement() {
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState({ name: "", description: "", categoryId: "", costPrice: "", baseSalePrice: "", commissionPercent: "10", stockQuantity: "0" });
 
-  const { data: products, isLoading } = trpc.products.list.useQuery({ limit: 100, offset: 0 });
+  const { data: products, isLoading } = trpc.products.listAll.useQuery({ limit: 100, offset: 0 });
   const { data: categories } = trpc.categories.list.useQuery();
 
+  const allProducts = (products as any[]) ?? [];
+  const activeProductsCount = allProducts.filter((p) => p.isActive).length;
+  const inactiveProductsCount = allProducts.filter((p) => !p.isActive).length;
+
   const createMutation = trpc.products.create.useMutation({
-    onSuccess: () => { utils.products.list.invalidate(); toast.success("Product created!"); setShowForm(false); resetForm(); },
+    onSuccess: () => { utils.products.list.invalidate(); utils.products.listAll.invalidate(); toast.success("Product created!"); setShowForm(false); resetForm(); },
     onError: (e) => toast.error(e.message),
   });
 
   const updateMutation = trpc.products.update.useMutation({
-    onSuccess: () => { utils.products.list.invalidate(); toast.success("Product updated!"); setShowForm(false); setEditId(null); resetForm(); },
+    onSuccess: () => { utils.products.list.invalidate(); utils.products.listAll.invalidate(); toast.success("Product updated!"); setShowForm(false); setEditId(null); resetForm(); },
     onError: (e) => toast.error(e.message),
   });
 
   const deleteMutation = trpc.products.delete.useMutation({
-    onSuccess: () => { utils.products.list.invalidate(); toast.success("Product removed"); },
+    onSuccess: () => { utils.products.list.invalidate(); utils.products.listAll.invalidate(); toast.success("Product removed"); },
     onError: (e) => toast.error(e.message),
   });
 
   const toggleMutation = trpc.products.update.useMutation({
-    onSuccess: () => utils.products.list.invalidate(),
+    onSuccess: () => { utils.products.list.invalidate(); utils.products.listAll.invalidate(); },
     onError: (e) => toast.error(e.message),
   });
 
@@ -58,8 +62,23 @@ export default function ProductManagement() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <DashboardHeader title="Product Management" subtitle="Add, edit, and manage your store's products" />
+      {/* <DashboardHeader title="Product Management" subtitle="Add, edit, and manage your store's products" /> */}
       <main className="container mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <Card className="border-0 shadow-sm p-4">
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Total Products</p>
+            <p className="text-2xl font-bold text-slate-900 mt-2">{allProducts.length}</p>
+          </Card>
+          <Card className="border-0 shadow-sm p-4">
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Active Products</p>
+            <p className="text-2xl font-bold text-slate-900 mt-2">{activeProductsCount}</p>
+          </Card>
+          <Card className="border-0 shadow-sm p-4">
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Inactive Products</p>
+            <p className="text-2xl font-bold text-slate-900 mt-2">{inactiveProductsCount}</p>
+          </Card>
+        </div>
+
         <div className="flex flex-col sm:flex-row gap-4 mb-6 items-start sm:items-center justify-between">
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-3 w-4 h-4 text-slate-400" />

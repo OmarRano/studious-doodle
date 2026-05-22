@@ -1,5 +1,5 @@
 import { useState } from "react";
-import DashboardHeader from "@/components/DashboardHeader";
+// import DashboardHeader from "@/components/DashboardHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -118,10 +118,10 @@ export default function AffiliateManagement() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <DashboardHeader
+      {/*<DashboardHeader
         title="Affiliate Management"
         subtitle="Manage affiliate users and commissions"
-      />
+      />*/}
 
       <main className="container mx-auto px-4 py-8">
         {/* Stats */}

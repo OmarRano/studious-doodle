@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import DashboardHeader from "@/components/DashboardHeader";
+// import DashboardHeader from "@/components/DashboardHeader";
 import { Plus, Tag, Trash2, Edit2 } from "lucide-react";
 
 export default function CategoryManagement() {
@@ -34,7 +34,7 @@ export default function CategoryManagement() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <DashboardHeader title="Category Management" subtitle="Organise your products into categories" />
+      {/* <DashboardHeader title="Category Management" subtitle="Organise your products into categories" /> */}
       <main className="container mx-auto px-4 py-8 max-w-2xl">
         <div className="flex justify-between items-center mb-6">
           <p className="text-slate-600">{(categories as any[])?.length ?? 0} categories</p>

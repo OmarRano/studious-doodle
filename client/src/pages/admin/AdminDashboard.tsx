@@ -1,4 +1,4 @@
-import DashboardHeader from "@/components/DashboardHeader";
+// import DashboardHeader from "@/components/DashboardHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
@@ -8,32 +8,41 @@ import { trpc } from "@/lib/trpc";
 
 export default function AdminDashboard() {
   const [, navigate] = useLocation();
+  const { data: stats, isLoading: statsLoading } = trpc.admin.stats.useQuery();
+  const { data: sales, isLoading: salesLoading } = trpc.admin.salesStats.useQuery();
 
-  // Mock data for charts
-  const salesData = [
-    { month: "Jan", sales: 4000, revenue: 2400 },
-    { month: "Feb", sales: 3000, revenue: 1398 },
-    { month: "Mar", sales: 2000, revenue: 9800 },
-    { month: "Apr", sales: 2780, revenue: 3908 },
-    { month: "May", sales: 1890, revenue: 4800 },
-    { month: "Jun", sales: 2390, revenue: 3800 },
+  const s = stats as any;
+  const sa = sales as any;
+  const isLoading = statsLoading || salesLoading;
+
+  const salesData = sa?.revenueTrend ?? [
+    { month: "Jan", revenue: 0, orders: 0 },
+    { month: "Feb", revenue: 0, orders: 0 },
+    { month: "Mar", revenue: 0, orders: 0 },
+    { month: "Apr", revenue: 0, orders: 0 },
+    { month: "May", revenue: 0, orders: 0 },
+    { month: "Jun", revenue: 0, orders: 0 },
   ];
 
   const orderStatusData = [
-    { name: "Pending", value: 24 },
-    { name: "Processing", value: 18 },
-    { name: "Shipped", value: 32 },
-    { name: "Delivered", value: 45 },
-  ];
+    { name: "Pending", value: sa?.pendingOrders ?? 0 },
+    { name: "Processing", value: sa?.processingOrders ?? 0 },
+    { name: "Assigned", value: sa?.assignedOrders ?? 0 },
+    { name: "In Transit", value: sa?.inTransitOrders ?? 0 },
+    { name: "Delivered", value: sa?.deliveredOrders ?? 0 },
+    { name: "Cancelled", value: sa?.cancelledOrders ?? 0 },
+  ].filter((entry) => entry.value >= 0);
 
-  const COLORS = ["#fbbf24", "#3b82f6", "#10b981", "#8b5cf6"];
+  const COLORS = ["#fbbf24", "#3b82f6", "#10b981", "#8b5cf6", "#ef4444", "#8b5cf6"];
+
+  const conversionRate = s?.totalUsers ? ((s.totalOrders / s.totalUsers) * 100).toFixed(2) : "0.00";
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <DashboardHeader
+      {/* <DashboardHeader
         title="Admin Dashboard"
         subtitle="Platform overview and management"
-      />
+      /> */}
 
       <main className="container mx-auto px-4 py-8">
         {/* Stats Grid */}
@@ -45,8 +54,8 @@ export default function AdminDashboard() {
             <CardContent>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-3xl font-bold text-slate-900">1,248</p>
-                  <p className="text-xs text-green-600 mt-1">+12% from last month</p>
+                  <p className="text-3xl font-bold text-slate-900">{s?.totalUsers?.toLocaleString() ?? "0"}</p>
+                  <p className="text-xs text-slate-500 mt-1">Active users: {s?.activeUsers?.toLocaleString() ?? "0"}</p>
                 </div>
                 <Users className="w-12 h-12 text-blue-500 opacity-20" />
               </div>
@@ -60,8 +69,8 @@ export default function AdminDashboard() {
             <CardContent>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-3xl font-bold text-slate-900">3,456</p>
-                  <p className="text-xs text-green-600 mt-1">+8% from last month</p>
+                  <p className="text-3xl font-bold text-slate-900">{s?.totalOrders?.toLocaleString() ?? "0"}</p>
+                  <p className="text-xs text-slate-500 mt-1">Delivered: {s?.deliveredOrders?.toLocaleString() ?? "0"}</p>
                 </div>
                 <ShoppingCart className="w-12 h-12 text-amber-500 opacity-20" />
               </div>
@@ -75,8 +84,8 @@ export default function AdminDashboard() {
             <CardContent>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-3xl font-bold text-slate-900">₦2.4M</p>
-                  <p className="text-xs text-green-600 mt-1">+24% from last month</p>
+                  <p className="text-3xl font-bold text-slate-900">₦{(s?.totalRevenue ?? 0).toLocaleString()}</p>
+                  <p className="text-xs text-slate-500 mt-1">Paid sales trend shown below</p>
                 </div>
                 <DollarSign className="w-12 h-12 text-green-500 opacity-20" />
               </div>
@@ -90,8 +99,8 @@ export default function AdminDashboard() {
             <CardContent>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-3xl font-bold text-slate-900">3.24%</p>
-                  <p className="text-xs text-green-600 mt-1">+0.5% from last month</p>
+                  <p className="text-3xl font-bold text-slate-900">{conversionRate}%</p>
+                  <p className="text-xs text-slate-500 mt-1">Orders / users</p>
                 </div>
                 <TrendingUp className="w-12 h-12 text-purple-500 opacity-20" />
               </div>
@@ -115,8 +124,8 @@ export default function AdminDashboard() {
                   <YAxis />
                   <Tooltip />
                   <Legend />
-                  <Line type="monotone" dataKey="sales" stroke="#3b82f6" strokeWidth={2} />
-                  <Line type="monotone" dataKey="revenue" stroke="#10b981" strokeWidth={2} />
+                  <Line type="monotone" dataKey="orders" name="Orders" stroke="#3b82f6" strokeWidth={2} />
+                  <Line type="monotone" dataKey="revenue" name="Revenue" stroke="#10b981" strokeWidth={2} />
                 </LineChart>
               </ResponsiveContainer>
             </CardContent>
@@ -165,9 +174,9 @@ export default function AdminDashboard() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <p className="text-sm text-slate-600">Active Users: <span className="font-bold text-slate-900">1,248</span></p>
-                <p className="text-sm text-slate-600">Pending Approvals: <span className="font-bold text-slate-900">12</span></p>
-                <p className="text-sm text-slate-600">Suspended Accounts: <span className="font-bold text-slate-900">3</span></p>
+                <p className="text-sm text-slate-600">Active Users: <span className="font-bold text-slate-900">{s?.activeUsers?.toLocaleString() ?? "0"}</span></p>
+                <p className="text-sm text-slate-600">Pending Approvals: <span className="font-bold text-slate-900">{s?.pendingApprovals?.toLocaleString() ?? "0"}</span></p>
+                <p className="text-sm text-slate-600">Suspended Accounts: <span className="font-bold text-slate-900">{s?.suspendedAccounts?.toLocaleString() ?? "0"}</span></p>
               </div>
               <Button onClick={() => navigate("/admin/users")} className="w-full">
                 Manage Users

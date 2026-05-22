@@ -1,5 +1,5 @@
 import { useState } from "react";
-import DashboardHeader from "@/components/DashboardHeader";
+// import DashboardHeader from "@/components/DashboardHeader";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -49,7 +49,7 @@ export default function InventoryHistory() {
 
   return (
     <div style={{ fontFamily: "'Outfit', system-ui, sans-serif", background: "#f8f6f0", minHeight: "100vh" }}>
-      <DashboardHeader title="Inventory History" subtitle="Recent product stock activity" role="stock_manager" />
+      {/* <DashboardHeader title="Inventory History" subtitle="Recent product stock activity" role="stock_manager" /> */}
 
       <div style={{ maxWidth: 1000, margin: "0 auto", padding: "24px 20px" }}>
 

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import DashboardHeader from "@/components/DashboardHeader";
+// import DashboardHeader from "@/components/DashboardHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,8 @@ const MOCK_LOW_STOCK = [
 
 export default function StockManagerDashboard() {
   const [, navigate] = useLocation();
+
+  const utils = trpc.useContext();
 
   // Try tRPC; fall back to mock on error
   const summaryQuery = trpc.stockManager?.summary?.useQuery(undefined, { retry: false });
@@ -57,13 +59,25 @@ export default function StockManagerDashboard() {
 
   return (
     <div style={{ fontFamily: "'Outfit', system-ui, sans-serif", background: "#f8f6f0", minHeight: "100vh" }}>
-      <DashboardHeader
+      {/* <DashboardHeader
         title="Stock Manager"
         subtitle="Gimbiya Mall — Inventory Control"
         role="stock_manager"
-      />
+      /> */}
 
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "24px 20px" }}>
+
+        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}>
+          <Button onClick={() => {
+            utils?.stockManager?.summary?.invalidate?.();
+            utils?.stockManager?.lowStockAlerts?.invalidate?.();
+            utils?.stockManager?.products?.invalidate?.();
+            utils?.inventory?.summary?.invalidate?.();
+            utils?.inventory?.lowStock?.invalidate?.();
+          }} size="sm" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <RefreshCw size={14} /> Refresh
+          </Button>
+        </div>
 
         {/* Stat cards */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))", gap: 16, marginBottom: 28 }}>

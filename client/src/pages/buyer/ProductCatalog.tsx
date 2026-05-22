@@ -37,7 +37,8 @@ export default function ProductCatalog() {
       navigate("/");
       return;
     }
-    addToCartMutation.mutate({ productId, quantity: 1 });
+    const pid = String(productId);
+    addToCartMutation.mutate({ productId: pid, quantity: 1 });
   };
 
   return (
