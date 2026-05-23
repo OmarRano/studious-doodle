@@ -8,6 +8,7 @@ import { useLocation } from "wouter";
 import { CreditCard, MapPin, Package, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
+import { CheckoutSkeleton } from "@/components/BuyerSkeletons";
 
 export default function Checkout() {
   const [, navigate] = useLocation();
@@ -36,6 +37,10 @@ export default function Checkout() {
     },
     onError: (error: any) => toast.error(error.message || "Failed to place order"),
   });
+
+  if (createOrderMutation.isPending) {
+    return <CheckoutSkeleton />;
+  }
 
   const handleAddressSubmit = (e: React.FormEvent) => {
     e.preventDefault();

@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useLocation } from "wouter";
 import { Package, ArrowRight, ShoppingBag } from "lucide-react";
+import { BuyerOrderHistorySkeleton } from "@/components/BuyerSkeletons";
 // import DashboardHeader from "@/components/DashboardHeader";
 
 const statusColor: Record<string, string> = {
@@ -19,13 +20,15 @@ export default function OrderHistory() {
   const [, navigate] = useLocation();
   const { data: orders, isLoading } = trpc.orders.list.useQuery({ limit: 50, offset: 0 });
 
+  if (isLoading) {
+    return <BuyerOrderHistorySkeleton />;
+  }
+
   return (
     <div className="min-h-screen bg-slate-50">
       {/* <DashboardHeader title="Order History" subtitle="Track all your past and current orders" /> */}
       <main className="container mx-auto px-4 py-8">
-        {isLoading ? (
-          <div className="flex justify-center py-16"><div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600" /></div>
-        ) : !orders || orders.length === 0 ? (
+        {!orders || orders.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24">
             <div className="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mb-6">
               <ShoppingBag className="w-12 h-12 text-slate-400" />

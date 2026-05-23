@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useLocation, useParams } from "wouter";
 import { ArrowLeft, Package, CheckCircle, Truck, MapPin, Clock, XCircle } from "lucide-react";
+import { OrderTrackingSkeleton } from "@/components/BuyerSkeletons";
 // import DashboardHeader from "@/components/DashboardHeader";
 
 const steps = [
@@ -23,6 +24,10 @@ export default function OrderTracking() {
 
   const currentStep = stepOrder.indexOf((order as any)?.status ?? "pending");
 
+  if (isLoading) {
+    return <OrderTrackingSkeleton />;
+  }
+
   return (
     <div className="min-h-screen bg-slate-50">
       {/* <DashboardHeader title="Order Tracking" subtitle="Real-time status of your order" /> */}
@@ -31,9 +36,7 @@ export default function OrderTracking() {
           <ArrowLeft className="w-4 h-4" /> Back to Orders
         </Button>
 
-        {isLoading ? (
-          <div className="flex justify-center py-16"><div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600" /></div>
-        ) : !order ? (
+        {!order ? (
           <Card className="border-0 shadow-md"><CardContent className="py-12 text-center"><p className="text-slate-500">Order not found.</p></CardContent></Card>
         ) : (
           <div className="space-y-6">

@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ShoppingCart, Search, Star } from "lucide-react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
+import { ProductCatalogSkeleton } from "@/components/BuyerSkeletons";
 
 export default function ProductCatalog() {
   const { user } = useAuth();
@@ -40,6 +41,10 @@ export default function ProductCatalog() {
     const pid = String(productId);
     addToCartMutation.mutate({ productId: pid, quantity: 1 });
   };
+
+  if (isLoading) {
+    return <ProductCatalogSkeleton />;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
@@ -160,16 +165,7 @@ export default function ProductCatalog() {
         <h2 className="text-2xl font-bold mb-6 text-slate-900">All Products</h2>
 
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[...Array(8)].map((_, i) => (
-              <Card key={i} className="animate-pulse">
-                <CardHeader>
-                  <div className="h-40 bg-slate-200 rounded-lg mb-3" />
-                  <div className="h-6 bg-slate-200 rounded w-3/4" />
-                </CardHeader>
-              </Card>
-            ))}
-          </div>
+          <ProductCatalogSkeleton />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {products?.map((product) => (

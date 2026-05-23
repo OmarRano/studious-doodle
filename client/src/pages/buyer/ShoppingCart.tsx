@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { useLocation } from "wouter";
 import { Trash2, Plus, Minus, ShoppingCart, ArrowRight, ArrowLeft, Package } from "lucide-react";
 import { toast } from "sonner";
+import { ShoppingCartSkeleton } from "@/components/BuyerSkeletons";
 
 export default function ShoppingCartPage() {
   const [, navigate] = useLocation();
@@ -33,11 +34,7 @@ export default function ShoppingCartPage() {
   const tax = Math.round(subtotal * 0.075);
   const total = subtotal + shipping + tax;
 
-  if (isLoading) return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50">
-      <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600" />
-    </div>
-  );
+  if (isLoading) return <ShoppingCartSkeleton />;
 
   if (items.length === 0) return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">

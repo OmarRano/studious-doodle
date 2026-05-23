@@ -8,6 +8,7 @@ import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useEffect } from "react";
+import { BuyerDashboardSkeleton } from "@/components/BuyerSkeletons";
 
 export default function BuyerDashboard() {
   const [, navigate] = useLocation();
@@ -45,6 +46,10 @@ export default function BuyerDashboard() {
     };
   }, []);
 
+  if (ordersQuery.isLoading) {
+    return <BuyerDashboardSkeleton />;
+  }
+
   return (
     <div className="min-h-screen bg-slate-50">
       {/* <DashboardHeader
@@ -62,7 +67,7 @@ export default function BuyerDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-3xl font-bold text-slate-900">
-                    {ordersQuery.isLoading ? "..." : totalOrders}
+                    {totalOrders}
                   </p>
                   <p className="text-xs text-slate-600 mt-1">All time</p>
                 </div>
@@ -79,7 +84,7 @@ export default function BuyerDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-3xl font-bold text-slate-900">
-                    {ordersQuery.isLoading ? "..." : `₦${totalSpent.toLocaleString()}`}
+                    {`₦${totalSpent.toLocaleString()}`}
                   </p>
                   <p className="text-xs text-slate-600 mt-1">Lifetime</p>
                 </div>

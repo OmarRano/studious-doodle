@@ -29,7 +29,7 @@ import ProductCatalog from "@/pages/buyer/ProductCatalog";
 import BuyerDashboard from "@/pages/buyer/BuyerDashboard";
 import OrderHistory   from "@/pages/buyer/OrderHistory";
 import OrderTracking  from "@/pages/buyer/OrderTracking";
-import BuyerProfile   from "@/pages/buyer/BuyerProfile";
+import Profile        from "@/pages/Profile";
 
 // Admin
 import AdminDashboard      from "@/pages/admin/AdminDashboard";
@@ -93,7 +93,7 @@ export default function App() {
           <Route path="/buyer">       <BuyerDashboard /></Route>
           <Route path="/orders">      <OrderHistory /></Route>
           <Route path="/orders/:id">  <OrderTracking /></Route>
-          <Route path="/profile">     <BuyerProfile /></Route>
+          <Route path="/profile">     <Profile /></Route>
 
           {/* Admin */}
           <Route path="/admin">             <AdminDashboard /></Route>

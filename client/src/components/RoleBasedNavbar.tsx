@@ -261,7 +261,16 @@ export default function RoleBasedNavbar() {
                   setDropdownOpen(false);
                 }}
               />
-              
+
+              {/* Profile settings */}
+              <DropdownBtn
+                icon={<Settings size={15} />}
+                label="Profile Settings"
+                onClick={() => {
+                  navigate("/profile");
+                  setDropdownOpen(false);
+                }}
+              />
 
               {/* Home link */}
               <DropdownBtn
