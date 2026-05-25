@@ -33,6 +33,8 @@ import Profile        from "@/pages/Profile";
 
 // Admin
 import AdminDashboard      from "@/pages/admin/AdminDashboard";
+import PlatformSettings    from "@/pages/admin/PlatformSettings";
+import StaffManagement     from "@/pages/admin/StaffManagement";
 import SalesAnalytics      from "@/pages/admin/SalesAnalytics";
 import AffiliateManagement from "@/pages/admin/AffiliateManagement";
 
@@ -96,6 +98,8 @@ export default function App() {
           <Route path="/profile">     <Profile /></Route>
 
           {/* Admin */}
+          <Route path="/admin/settings">    <PlatformSettings /></Route>
+          <Route path="/admin/staff">       <StaffManagement /></Route>
           <Route path="/admin">             <AdminDashboard /></Route>
           <Route path="/admin/analytics">   <SalesAnalytics /></Route>
           <Route path="/admin/affiliates">  <AffiliateManagement /></Route>

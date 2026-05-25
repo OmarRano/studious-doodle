@@ -165,7 +165,7 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* User Management */}
           <Card className="border-0 shadow-md">
-            <CardHeader>
+            {/* <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <UserCheck className="w-5 h-5" />
                 User Management
@@ -181,7 +181,7 @@ export default function AdminDashboard() {
               <Button onClick={() => navigate("/admin/users")} className="w-full">
                 Manage Users
               </Button>
-            </CardContent>
+            </CardContent> */}
           </Card>
 
           {/* Platform Settings */}
@@ -199,8 +199,28 @@ export default function AdminDashboard() {
                 <p className="text-sm text-slate-600">Payment Gateway: <span className="font-bold text-slate-900">Monnify</span></p>
                 <p className="text-sm text-slate-600">System Status: <span className="font-bold text-green-600">Operational</span></p>
               </div>
-              <Button variant="outline" className="w-full">
+              <Button variant="outline" className="w-full" onClick={() => navigate("/admin/settings") }>
                 Configure Settings
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 shadow-md">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="w-5 h-5" />
+                Staff Management
+              </CardTitle>
+              <CardDescription>Manage in-store staff and affiliates</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <p className="text-sm text-slate-600">Staff Roles: <span className="font-bold text-slate-900">Manager, Stock Manager, Delivery</span></p>
+                <p className="text-sm text-slate-600">Affiliate Control: <span className="font-bold text-slate-900">Enabled</span></p>
+                <p className="text-sm text-slate-600">Onboarding Flow: <span className="font-bold text-slate-900">Ready</span></p>
+              </div>
+              <Button variant="outline" className="w-full" onClick={() => navigate("/admin/staff") }>
+                Open Staff Management
               </Button>
             </CardContent>
           </Card>

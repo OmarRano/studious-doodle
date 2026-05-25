@@ -165,7 +165,28 @@ export const appRouter = router({
       .input(z.object({
         id: z.string(),
         name: z.string().optional(),
+        slug: z.string().optional(),
+        category: z.enum(['store','office']).optional(),
         description: z.string().optional(),
+        live: z.boolean().optional(),
+        maintenance: z.boolean().optional(),
+        contact: z.object({
+          email: z.string().email().optional(),
+          phone: z.string().optional(),
+          whatsapp: z.string().optional(),
+          address: z.string().optional(),
+          city: z.string().optional(),
+          state: z.string().optional(),
+        }).optional(),
+        hours: z.record(z.string(), z.object({ open: z.boolean(), from: z.string(), to: z.string() })).optional(),
+        paymentMethods: z.record(z.string(), z.boolean()).optional(),
+        notifications: z.record(z.string(), z.boolean()).optional(),
+        brandColors: z.object({
+          primary: z.string().optional(),
+          secondary: z.string().optional(),
+          accent: z.string().optional(),
+        }).optional(),
+        logoImageUrl: z.string().optional(),
         bannerImageUrl: z.string().optional(),
         buildingLevel: z.number().optional(),
         location: z.object({ x: z.number(), y: z.number() }).optional(),
@@ -385,6 +406,65 @@ export const appRouter = router({
         const filter: any = { role: { $in: ["manager","stock_manager","delivery"] } };
         if (input.role) filter.role = input.role;
         return User.find(filter).select("-passwordHash").sort({ createdAt: -1 }).lean();
+      }),
+    globalSearch: adminProcedure
+      .input(z.object({ query: z.string().min(1), roles: z.array(z.string()).optional(), limit: z.number().default(50) }))
+      .query(async ({ input }) => {
+        const match = new RegExp(input.query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+        const roleFilter = input.roles?.length ? { role: { $in: input.roles } } : {};
+        return User.find({
+          ...roleFilter,
+          $or: [
+            { name: match },
+            { email: match },
+            { _id: input.query.match(/^[0-9a-fA-F]{24}$/) ? input.query : undefined },
+          ].filter(Boolean),
+        })
+          .select("-passwordHash")
+          .sort({ createdAt: -1 })
+          .limit(input.limit)
+          .lean();
+      }),
+    lookupUserById: adminProcedure
+      .input(z.object({ userId: z.string().min(1) }))
+      .query(async ({ input }) => {
+        const user = await User.findById(input.userId).select("-passwordHash").lean();
+        if (!user) throw new Error("User not found");
+        return user;
+      }),
+    removeStoreStaff: adminProcedure
+      .input(z.object({ userId: z.string() }))
+      .mutation(async ({ input }) => {
+        await User.findByIdAndUpdate(input.userId, { role: "buyer", isAffiliate: false });
+        return { success: true };
+      }),
+    onboardExistingUser: adminProcedure
+      .input(z.object({ userId: z.string(), role: z.string() }))
+      .mutation(async ({ input }) => {
+        const user = await User.findById(input.userId);
+        if (!user) throw new Error("User not found");
+        if (["admin", "developer"].includes(user.role)) throw new Error("Cannot modify this user role");
+        const updates: any = { role: input.role, isActive: true };
+        if (input.role === "reader") updates.isAffiliate = true;
+        await User.findByIdAndUpdate(input.userId, updates);
+        return { success: true, userName: user.name, newRole: input.role };
+      }),
+    createStoreStaff: adminProcedure
+      .input(z.object({ name: z.string().min(2), email: z.string().email(), password: z.string().min(8), phone: z.string().optional(), role: z.enum(["stock_manager","delivery"]) }))
+      .mutation(async ({ input }) => {
+        const existing = await User.findOne({ email: input.email.toLowerCase() });
+        if (existing) throw new Error("A user with this email already exists");
+        const salt = await bcrypt.genSalt(12);
+        const passwordHash = await bcrypt.hash(input.password, salt);
+        const user = await User.create({
+          name: input.name,
+          email: input.email.toLowerCase(),
+          passwordHash,
+          phone: input.phone,
+          role: input.role,
+          isActive: true,
+        });
+        return { success: true, userId: user._id.toString(), name: user.name };
       }),
     toggleUserActive: adminProcedure
       .input(z.object({ userId: z.string(), isActive: z.boolean() }))

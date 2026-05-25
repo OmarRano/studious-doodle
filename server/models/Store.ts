@@ -3,8 +3,28 @@ import mongoose, { Document, Schema } from "mongoose";
 export interface IStore extends Document {
   _id: mongoose.Types.ObjectId;
   name: string;
+  slug?: string;
   category: 'store' | 'office';
   description?: string;
+  live?: boolean;
+  maintenance?: boolean;
+  contact?: {
+    email?: string;
+    phone?: string;
+    whatsapp?: string;
+    address?: string;
+    city?: string;
+    state?: string;
+  };
+  hours?: Record<string, { open: boolean; from: string; to: string }>;
+  paymentMethods?: Record<string, boolean>;
+  notifications?: Record<string, boolean>;
+  brandColors?: {
+    primary?: string;
+    secondary?: string;
+    accent?: string;
+  };
+  logoImageUrl?: string;
   bannerImageUrl?: string;
   buildingLevel: number;
   location?: { x: number; y: number };
@@ -29,8 +49,28 @@ export interface IStore extends Document {
 const storeSchema = new Schema<IStore>(
   {
     name: { type: String, required: true, trim: true },
+    slug: { type: String, trim: true, lowercase: true },
     category: { type: String, enum: ['store', 'office'], default: 'store' },
     description: { type: String },
+    live: { type: Boolean, default: true },
+    maintenance: { type: Boolean, default: false },
+    contact: {
+      email: { type: String },
+      phone: { type: String },
+      whatsapp: { type: String },
+      address: { type: String },
+      city: { type: String },
+      state: { type: String },
+    },
+    hours: { type: Schema.Types.Mixed },
+    paymentMethods: { type: Schema.Types.Mixed },
+    notifications: { type: Schema.Types.Mixed },
+    brandColors: {
+      primary: { type: String },
+      secondary: { type: String },
+      accent: { type: String },
+    },
+    logoImageUrl: { type: String },
     bannerImageUrl: { type: String },
     buildingLevel: { type: Number, default: 1 },
     location: {
