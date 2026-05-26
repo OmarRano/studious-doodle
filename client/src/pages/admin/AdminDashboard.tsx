@@ -62,7 +62,7 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-md hover:shadow-lg transition-shadow">
+          <Card className="border-0 shadow-md hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/admin/orders')}>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-slate-600">Total Orders</CardTitle>
             </CardHeader>
@@ -233,7 +233,7 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Button variant="outline" onClick={() => navigate("/admin/analytics")}>
+              <Button variant="outline" onClick={() => navigate("/admin/orders")}>
                 View Analytics
               </Button>
               <Button variant="outline">
