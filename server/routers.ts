@@ -28,6 +28,7 @@ import { Order } from "./models/Order";
 import { CartItem } from "./models/CartItem";
 import { User } from "./models/User";
 import { Store } from "./models/Store";
+import { StaffRequest } from "./models/StaffRequest";
 import { paymentRouter } from "./payment-router";
 import { calcFinalPrice, calcOrderTotals } from "./pricing";
 
@@ -471,6 +472,173 @@ export const appRouter = router({
       .mutation(async ({ input }) => {
         await User.findByIdAndUpdate(input.userId, { isActive: input.isActive });
         return { success: true };
+      }),
+  }),
+
+  // ── MANAGER ──────────────────────────────────────────────────────────────────
+  manager: router({
+    // Staff Onboarding Requests
+    submitStaffRequest: managerProcedure
+      .input(z.object({
+        name: z.string().min(1),
+        email: z.string().email(),
+        phone: z.string().optional(),
+        role: z.enum(["stock_manager", "delivery"]),
+        reason: z.string().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const manager = ctx.user as any;
+        // Check for duplicate request (same email, pending/approved status)
+        const existing = await StaffRequest.findOne({
+          requestedBy: manager._id,
+          email: input.email.toLowerCase(),
+          status: { $in: ["pending", "approved"] },
+        });
+        if (existing) throw new Error("A request for this email already exists");
+        
+        const req = await StaffRequest.create({
+          requestedBy: manager._id,
+          managerName: manager.name,
+          name: input.name,
+          email: input.email.toLowerCase(),
+          phone: input.phone,
+          role: input.role,
+          reason: input.reason,
+          status: "pending",
+        });
+        return { success: true, id: req._id.toString() };
+      }),
+    
+    myStaffRequests: managerProcedure
+      .query(async ({ ctx }) => {
+        const manager = ctx.user as any;
+        const reqs = await StaffRequest.find({ requestedBy: manager._id })
+          .sort({ createdAt: -1 })
+          .lean();
+        return reqs || [];
+      }),
+
+    // Order Assignment
+    ordersForAssignment: managerProcedure
+      .input(z.object({
+        status: z.string().optional(),
+        search: z.string().optional(),
+        limit: z.number().default(20),
+        offset: z.number().default(0),
+      }))
+      .query(async ({ input }) => {
+        const filter: any = {};
+        if (input.status) filter.status = input.status;
+        if (input.search) {
+          filter.orderId = new RegExp(input.search, "i");
+        }
+        const total = await Order.countDocuments(filter);
+        const orders = await Order.find(filter)
+          .sort({ createdAt: -1 })
+          .skip(input.offset)
+          .limit(input.limit)
+          .populate("buyerId", "name email phone")
+          .populate("deliveryRiderId", "name email phone")
+          .lean();
+        return { orders, total };
+      }),
+
+    listRiders: managerProcedure
+      .query(async () => {
+        const riders = await User.find({ role: "delivery", isActive: true })
+          .select("name email phone")
+          .lean();
+        return riders;
+      }),
+
+    assignRider: managerProcedure
+      .input(z.object({ orderId: z.string(), riderId: z.string() }))
+      .mutation(async ({ input }) => {
+        const rider = await User.findById(input.riderId).select("name email phone").lean();
+        if (!rider) throw new Error("Rider not found");
+        await Order.findOneAndUpdate(
+          { orderId: input.orderId },
+          { deliveryRiderId: input.riderId, status: "assigned" }
+        );
+        return { success: true, riderName: rider.name };
+      }),
+
+    unassignRider: managerProcedure
+      .input(z.object({ orderId: z.string() }))
+      .mutation(async ({ input }) => {
+        await Order.findOneAndUpdate(
+          { orderId: input.orderId },
+          { deliveryRiderId: null, status: "paid" }
+        );
+        return { success: true };
+      }),
+
+    // Analytics
+    branchAnalytics: managerProcedure
+      .input(z.object({ days: z.number().default(30) }))
+      .query(async ({ input, ctx }) => {
+        const manager = ctx.user as any;
+        const since = new Date(Date.now() - input.days * 24 * 60 * 60 * 1000);
+        
+        // Fetch orders within period
+        const orders = await Order.find({ createdAt: { $gte: since } })
+          .populate("buyerId")
+          .populate("deliveryRiderId")
+          .lean();
+        
+        const revenue = orders.reduce((sum: number, o: any) => sum + (o.finalAmount || 0), 0);
+        const commission = orders.reduce((sum: number, o: any) => sum + (o.commissionAmount || 0), 0);
+        const delivered = orders.filter((o: any) => o.status === "delivered").length;
+        const cancelled = orders.filter((o: any) => o.status === "cancelled").length;
+        
+        // Monthly trend (daily)
+        const trend: any = {};
+        orders.forEach((o: any) => {
+          const day = new Date(o.createdAt).toLocaleDateString("en-GB");
+          if (!trend[day]) trend[day] = { day, revenue: 0, commission: 0 };
+          trend[day].revenue += o.finalAmount || 0;
+          trend[day].commission += o.commissionAmount || 0;
+        });
+        
+        const monthlyTrend = Object.values(trend).slice(-10);
+        
+        // Top products
+        const productSales: any = {};
+        orders.forEach((o: any) => {
+          // Simplified: just count orders per product
+          productSales["Product"] = (productSales["Product"] || 0) + 1;
+        });
+        const topProducts = Object.entries(productSales)
+          .map(([name, sales]) => ({ name, sales }))
+          .sort((a: any, b: any) => b.sales - a.sales)
+          .slice(0, 10);
+        
+        // Staff (fetch delivery riders and stock managers)
+        const staff = await User.find({ role: { $in: ["delivery", "stock_manager"] }, isActive: true })
+          .select("name role email")
+          .lean();
+        
+        // Recent orders
+        const recentOrders = orders
+          .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          .slice(0, 20)
+          .map((o: any) => ({
+            orderId: o.orderId,
+            amount: o.finalAmount,
+            status: o.status,
+          }));
+        
+        return {
+          revenue,
+          commission,
+          orders: orders.length,
+          delivered,
+          cancelled,
+          monthlyTrend,
+          topProducts,
+          staff,
+          recentOrders,
+        };
       }),
   }),
 

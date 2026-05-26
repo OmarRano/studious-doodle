@@ -120,7 +120,7 @@ export default function ManagerDashboard() {
           </Card>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card className="border-0 shadow-md">
             <CardHeader>
               <CardTitle>Product Management</CardTitle>
@@ -151,6 +151,29 @@ export default function ManagerDashboard() {
               <Button onClick={() => navigate("/manager/inventory")} variant="outline" className="w-full">
                 View Inventory
               </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 shadow-md">
+            <CardHeader>
+              <CardTitle>Manager Tools</CardTitle>
+              <CardDescription>Go directly to analytics, onboarding, and order assignment</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <p className="text-sm text-slate-600">Quick access to your manager workflows.</p>
+              </div>
+              <div className="space-y-3">
+                <Button onClick={() => navigate("/manager/analytics")} className="w-full">
+                  View Analytics
+                </Button>
+                <Button onClick={() => navigate("/manager/onboarding")} variant="outline" className="w-full">
+                  Staff Onboarding
+                </Button>
+                <Button onClick={() => navigate("/manager/orders")} variant="outline" className="w-full">
+                  Order Assignment
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>

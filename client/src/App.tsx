@@ -44,6 +44,9 @@ import ManagerDashboard    from "@/pages/manager/ManagerDashboard";
 import ProductManagement   from "@/pages/manager/ProductManagement";
 import CategoryManagement  from "@/pages/manager/CategoryManagement";
 import InventoryManagement from "@/pages/manager/InventoryManagement";
+import ManagerOnboarding   from "@/pages/manager/ManagerOnboarding";
+import ManagerOrderAssignment from "@/pages/manager/ManagerOrderAssignment";
+import ManagerAnalytics    from "@/pages/manager/ManagerAnalytics";
 
 // Delivery
 import DeliveryDashboard     from "@/pages/delivery/DeliveryDashboard";
@@ -111,6 +114,9 @@ export default function App() {
           <Route path="/manager/products">   <ProductManagement /></Route>
           <Route path="/manager/categories"> <CategoryManagement /></Route>
           <Route path="/manager/inventory">  <InventoryManagement /></Route>
+          <Route path="/manager/onboarding" component={ManagerOnboarding} />
+          <Route path="/manager/orders" component={ManagerOrderAssignment} />
+          <Route path="/manager/analytics" component={ManagerAnalytics} />
 
           {/* Delivery */}
           <Route path="/delivery">           <DeliveryDashboard /></Route>
