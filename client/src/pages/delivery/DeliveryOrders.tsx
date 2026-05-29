@@ -41,8 +41,7 @@ export default function DeliveryOrders() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* <DashboardHeader title="My Orders" subtitle="View and manage your assigned deliveries" /> */}
-      <main className="container mx-auto px-4 py-8">
+ved      <main className="container mx-auto px-4 py-8">
 
         {/* Filter Tabs */}
         <div className="flex gap-2 mb-6 overflow-x-auto pb-1">

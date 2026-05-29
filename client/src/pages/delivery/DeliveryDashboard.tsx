@@ -157,6 +157,56 @@ export default function DeliveryDashboard() {
             </CardContent>
           </Card>
         </div>
+
+        <button
+          onClick={() => navigate("/delivery/fulfillment")}
+          style={{
+            width: "100%", marginTop: 8, display: "flex", alignItems: "center",
+            justifyContent: "space-between", background: "#0f172a",
+            border: "1.5px solid rgba(16,185,129,0.3)", borderRadius: 14,
+            padding: "20px 24px", cursor: "pointer", textAlign: "left",
+            fontFamily: "inherit", boxShadow: "0 4px 20px rgba(0,0,0,0.12)",
+            transition: "opacity .15s",
+          }}
+          onMouseEnter={e => (e.currentTarget.style.opacity = "0.88")}
+          onMouseLeave={e => (e.currentTarget.style.opacity = "1")}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            <div style={{
+              width: 52, height: 52, borderRadius: 12, flexShrink: 0,
+              background: "rgba(16,185,129,0.12)", border: "1.5px solid rgba(16,185,129,0.3)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}>
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2" />
+                <path d="M15 18H9" /><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14" />
+                <circle cx="17" cy="18" r="2" /><circle cx="7" cy="18" r="2" />
+                <path d="m9 12 2 2 4-4" />
+              </svg>
+            </div>
+            <div>
+              <p style={{ margin: 0, fontSize: 15, fontWeight: 800, color: "#10b981" }}>
+                Fulfillment Dashboard
+              </p>
+              <p style={{ margin: "3px 0 0", fontSize: 12, color: "#94a3b8" }}>
+                Accept orders · Get Fulfillment ID · Submit delivery proof & signature
+              </p>
+            </div>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+            <span style={{
+              padding: "4px 12px", borderRadius: 20, fontSize: 10, fontWeight: 700,
+              background: "rgba(16,185,129,0.12)", color: "#10b981",
+              border: "1px solid rgba(16,185,129,0.3)", whiteSpace: "nowrap",
+            }}>
+              Open Dashboard
+            </span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+          </div>
+        </button>
+
       </main>
     </div>
   );

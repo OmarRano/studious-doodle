@@ -130,6 +130,53 @@ export default function StockManagerDashboard() {
           ))}
         </div>
 
+        <button
+          onClick={() => navigate("/stock-manager/fulfillment")}
+          style={{
+            width: "100%", marginBottom: 28, display: "flex", alignItems: "center",
+            justifyContent: "space-between", background: "#1A1A2E",
+            border: "1.5px solid #C8A84B44", borderRadius: 14,
+            padding: "20px 24px", cursor: "pointer", textAlign: "left",
+            fontFamily: "inherit", boxShadow: "0 4px 20px rgba(26,26,46,0.18)",
+            transition: "opacity .15s",
+          }}
+          onMouseEnter={e => (e.currentTarget.style.opacity = "0.9")}
+          onMouseLeave={e => (e.currentTarget.style.opacity = "1")}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            <div style={{
+              width: 50, height: 50, borderRadius: 12,
+              background: "rgba(200,168,75,0.15)", border: "1.5px solid #C8A84B55",
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C8A84B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v3" />
+                <rect x="9" y="11" width="14" height="10" rx="2" />
+                <circle cx="12" cy="21" r="1" /><circle cx="20" cy="21" r="1" />
+                <path d="m16 15 2 2 4-4" />
+              </svg>
+            </div>
+            <div>
+              <p style={{ margin: 0, fontSize: 15, fontWeight: 800, color: "#C8A84B" }}>
+                Fulfillment Orders
+              </p>
+              <p style={{ margin: "3px 0 0", fontSize: 12, color: "#9ca3af" }}>
+                Confirm packages ready · Approve rider pickup · Verify buyer collection
+              </p>
+            </div>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+            <span style={{
+              padding: "4px 12px", borderRadius: 20, fontSize: 10, fontWeight: 700,
+              background: "rgba(200,168,75,0.15)", color: "#C8A84B",
+              border: "1px solid #C8A84B44",
+            }}>
+              Action Required
+            </span>
+            <ArrowRight size={18} color="#C8A84B" />
+          </div>
+        </button>
+
         {/* Low stock preview */}
         <div style={{ background: "white", borderRadius: 14, border: "1px solid #e2ddd4", overflow: "hidden" }}>
           <div style={{
