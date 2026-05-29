@@ -281,24 +281,24 @@ function DownloadReport({ data }: any) {
       `Cancelled:      ${(data?.cancelled??0).toLocaleString()}`,
       "",
       "=== MONTHLY TREND (Last 10 Days) ===",
-      `${"Day":<12} | ${"Revenue":<15} | ${"Commission":<15}`,
+      `${"Day".padEnd(12)} | ${"Revenue".padEnd(15)} | ${"Commission".padEnd(15)}`,
       `${"-".repeat(12)}-+-${"-".repeat(15)}-+-${"-".repeat(15)}`,
       ...(data?.monthlyTrend??[]).map((m:any)=>
-        `${m.day:<12} | ${fmt(m.revenue):<15} | ${fmt(m.commission):<15}`
+        `${String(m.day).padEnd(12)} | ${fmt(m.revenue).padEnd(15)} | ${fmt(m.commission).padEnd(15)}`
       ),
       "",
       "=== TOP PRODUCTS ===",
-      `${"#":<3} | ${"Sales":<10}`,
+      `${"#".padEnd(3)} | ${"Sales".padEnd(10)}`,
       `${"-".repeat(3)}-+-${"-".repeat(10)}`,
       ...(data?.topProducts??[]).slice(0,10).map((p:any,i:number)=>
-        `${(i+1):<3} | ${(p.sales??0).toLocaleString():<10}`
+        `${String(i+1).padEnd(3)} | ${String((p.sales??0).toLocaleString()).padEnd(10)}`
       ),
       "",
       "=== STAFF ROSTER ===",
-      `${"Name":<20} | ${"Role":<15}`,
+      `${"Name".padEnd(20)} | ${"Role".padEnd(15)}`,
       `${"-".repeat(20)}-+-${"-".repeat(15)}`,
       ...(data?.staff??[]).map((s:any)=>
-        `${(s.name??"-").slice(0,20):<20} | ${(s.role||"Staff").slice(0,15):<15}`
+        `${String((s.name??"-").slice(0,20)).padEnd(20)} | ${String((s.role||"Staff").slice(0,15)).padEnd(15)}`
       ),
       "",
       "=== END OF REPORT ===",
