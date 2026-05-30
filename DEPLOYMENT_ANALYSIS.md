@@ -2,9 +2,9 @@
 
 ## Executive Summary
 
-Your Gimbiya Mall project is structured as a **monorepo** with integrated frontend (React/Vite) and backend (Express). For production deployment, I've created a **separate deployment strategy** for each component:
+Your Gimbiya Mall project is structured as a **monorepo** with separate frontend and backend apps. For production deployment, this guide now targets:
 
-- **Frontend** → Vercel (serverless static hosting)
+- **Frontend** → Netlify (static hosting)
 - **Backend** → Render (containerized Node.js service)
 
 ---
@@ -17,14 +17,13 @@ Your Gimbiya Mall project is structured as a **monorepo** with integrated fronte
 ├─────────────────────────────────────────────────────┤
 │                                                       │
 │  ┌──────────────────────┐  ┌──────────────────────┐ │
-│  │   Frontend (Vite)    │  │  Backend (Express)   │ │
+│  │   Frontend           │  │  Backend             │ │
 │  ├──────────────────────┤  ├──────────────────────┤ │
-│  │ • React 19           │  │ • Express 4.x        │ │
+│  │ • React + Vite       │  │ • Express / Node     │ │
 │  │ • TypeScript         │  │ • TypeScript         │ │
-│  │ • TailwindCSS        │  │ • tRPC Server        │ │
+│  │ • TailwindCSS        │  │ • tRPC / API routes  │ │
 │  │ • React Query        │  │ • MongoDB            │ │
 │  │ • Firebase Auth      │  │ • Drizzle ORM        │ │
-│  │ • tRPC Client        │  │ • JWT Auth           │ │
 │  └──────────────────────┘  └──────────────────────┘ │
 │                                                       │
 │  ┌──────────────────────┐  ┌──────────────────────┐ │
@@ -48,26 +47,26 @@ Your Gimbiya Mall project is structured as a **monorepo** with integrated fronte
 ├──────────────────────────────────────────────────────────────────┤
 │                                                                    │
 │  ┌─────────────────────────────────────────────────────────────┐ │
-│  │                      VERCEL (Frontend)                      │ │
+│  │                     NETLIFY (Frontend)                     │ │
 │  ├─────────────────────────────────────────────────────────────┤ │
 │  │                                                               │ │
 │  │  ┌──────────────────────────────────────────────────────┐  │ │
-│  │  │  React SPA (client/dist)                             │  │ │
+│  │  │  React SPA (frontend/dist)                           │  │ │
 │  │  │  → Served globally via CDN                           │  │ │
-│  │  │  → Instant cold start                                │  │ │
+│  │  │  → Base dir: frontend                                │  │ │
 │  │  │  → Environment: VITE_API_URL → Render Backend        │  │ │
 │  │  └──────────────────────────────────────────────────────┘  │ │
 │  │                                                               │ │
-│  │  URL: https://your-app.vercel.app                            │ │
+│  │  URL: https://your-site.netlify.app                         │ │
 │  └─────────────────────────────────────────────────────────────┘ │
 │                          ▲                                         │
 │                          │ HTTP/HTTPS API Calls                    │
-│                          │ (tRPC over httpBatchLink)               │
+│                          │                                      │
 │                          ▼                                         │
 │  ┌─────────────────────────────────────────────────────────────┐ │
 │  │                   RENDER (Backend)                          │ │
 │  ├─────────────────────────────────────────────────────────────┤ │
-│  │                                                               │ │
+│  │                                                               │
 │  │  ┌──────────────────────────────────────────────────────┐  │ │
 │  │  │  Node.js Express Server                              │  │ │
 │  │  │  → tRPC API Router (/api/trpc/*)                     │  │ │
@@ -75,12 +74,12 @@ Your Gimbiya Mall project is structured as a **monorepo** with integrated fronte
 │  │  │  → Rate Limiting                                     │  │ │
 │  │  │  → CORS Middleware                                   │  │ │
 │  │  └──────────────────────────────────────────────────────┘  │ │
-│  │                                                               │ │
+│  │                                                               │
 │  │  ┌─────────────────┐      ┌──────────────────────────────┐ │ │
 │  │  │  MongoDB Atlas  │      │  MySQL Database (Drizzle)    │ │ │
 │  │  │  (User data)    │      │  (Orders, Products, etc.)    │ │ │
 │  │  └─────────────────┘      └──────────────────────────────┘ │ │
-│  │                                                               │ │
+│  │                                                               │
 │  │  URL: https://your-app.onrender.com                          │ │
 │  └─────────────────────────────────────────────────────────────┘ │
 │                                                                    │
@@ -100,52 +99,47 @@ Your Gimbiya Mall project is structured as a **monorepo** with integrated fronte
 
 ## Configuration Files Created
 
-### 1. **vercel.json** - Vercel Frontend Configuration
-- **Purpose**: Tells Vercel how to build and serve the frontend
+### 1. **netlify.toml** - Netlify Frontend Configuration
+- **Purpose**: Tells Netlify how to build and publish the frontend from `frontend/`
 - **Key Settings**:
-  - Build from `client/` directory
-  - Output to `client/dist`
-  - Sets environment variable requirements
-  
+  - Base directory: `frontend`
+  - Publish directory: `dist`
+  - Build command: `pnpm install && pnpm build`
+  - SPA fallback redirect for client-side routing
+
 ### 2. **render.yaml** - Render Backend Configuration
 - **Purpose**: Infrastructure as Code for Render deployment
 - **Key Settings**:
   - Node.js environment
-  - Build: `npm run build`
-  - Start: `npm start`
-  - Environment variable declarations
+  - Build: `pnpm install && pnpm build`
+  - Start: `pnpm start`
+  - Root directory: `backend`
 
 ### 3. **.env.example** - Environment Template
 - **Purpose**: Template showing all required environment variables
 - **Usage**: Copy to `.env` and fill in actual values (never commit)
 
-### 4. **client/.env.production** - Frontend Production Config
-- **Purpose**: Frontend environment variables for production
-- **Key Variable**: `VITE_API_URL` (Render backend URL)
-
-### 5. **client/.env.example** - Frontend Environment Template
+### 4. **frontend/.env.example** - Frontend Environment Template
 - **Purpose**: Shows frontend-specific environment variables needed
-- **Key Variables**: Firebase config + API URL
+- **Key Variables**: Firebase config + `VITE_API_URL`
 
-### 6. **.nvmrc** - Node Version Specification
+### 5. **.nvmrc** - Node Version Specification
 - **Version**: 18.17.0
-- **Purpose**: Ensures both Vercel and Render use the same Node version
+- **Purpose**: Ensures both Netlify and Render use the same Node version
 
-### 7. **DEPLOYMENT.md** - Comprehensive Deployment Guide
-- **Length**: 400+ lines
+### 6. **DEPLOYMENT.md** - Comprehensive Deployment Guide
 - **Content**: Full step-by-step instructions for both platforms
 
-### 8. **QUICK_DEPLOY.md** - Quick Reference Guide
+### 7. **QUICK_DEPLOY.md** - Quick Reference Guide
 - **Purpose**: Checklist format for rapid deployment
-- **Audience**: Developers who need quick reference
 
-### 9. **pre-deploy.sh** - Pre-deployment Validation Script
+### 8. **pre-deploy.sh** - Pre-deployment Validation Script
 - **Checks**:
   - Node version
   - TypeScript compilation
   - Full build success
 
-### 10. **post-deploy-test.sh** - Post-deployment Smoke Tests
+### 9. **post-deploy-test.sh** - Post-deployment Smoke Tests
 - **Tests**:
   - Backend connectivity
   - Frontend connectivity
@@ -163,7 +157,7 @@ Your Gimbiya Mall project is structured as a **monorepo** with integrated fronte
 | `MONGODB_URI` | User database connection | `mongodb+srv://...` |
 | `JWT_SECRET` | Session token signing | 32+ char random string |
 | `PORT` | Server port (Render assigns) | `3000` |
-| `CORS_ORIGIN` | Allowed frontend URL | `https://app.vercel.app` |
+| `CORS_ORIGIN` | Allowed frontend URL | `https://app.netlify.app` |
 
 ### Backend (Render) - Optional
 
@@ -173,7 +167,7 @@ Your Gimbiya Mall project is structured as a **monorepo** with integrated fronte
 | `AWS_*` credentials | S3 image storage | For image uploads |
 | `MONNIFY_*` credentials | Payment processing | For payments |
 
-### Frontend (Vercel) - Required
+### Frontend (Netlify) - Required
 
 | Variable | Purpose | Example |
 |----------|---------|---------|
@@ -193,9 +187,9 @@ Your Gimbiya Mall project is structured as a **monorepo** with integrated fronte
    ├─ Deploy (git push)
    └─ Get backend URL
 
-2. Frontend Second (Vercel)
-   ├─ Create Vercel project
-   ├─ Set VITE_API_URL to backend URL
+2. Frontend Second (Netlify)
+   ├─ Create Netlify site
+   ├─ Set `VITE_API_URL` to backend URL
    ├─ Deploy (git push)
    └─ Get frontend URL
 
@@ -210,7 +204,7 @@ Your Gimbiya Mall project is structured as a **monorepo** with integrated fronte
 ```
 For any code changes:
 git push origin main
-└─ Vercel auto-deploys frontend
+└─ Netlify auto-deploys frontend
 └─ Render auto-deploys backend
 ```
 
@@ -221,41 +215,39 @@ git push origin main
 ### 1. **CORS Configuration**
 - Backend must know frontend URL to allow API requests
 - Frontend must know backend URL to make API calls
-- Chicken-and-egg problem solved by: Deploy both, then cross-update
+- Deploy both first, then cross-update the environment values
 
 ### 2. **Build Process**
 - Frontend: Vite builds React to static files
-- Backend: esbuild bundles Node.js server
-- Both must succeed for deployment to work
+- Backend: Render runs Node build from `backend`
+- Both builds must succeed for deployment to work
 
 ### 3. **Database Access**
-- MongoDB Atlas must allow Render IP addresses (whitelist)
-- MySQL (if using) must be accessible from Render
-- Connection strings should use environment variables
+- MongoDB Atlas must allow Render access
+- MySQL (if used) must be accessible from Render
+- Use environment variables for all connection strings
 
 ### 4. **Cold Starts**
-- Render: First request may take 5-10 seconds (cold start)
-- Vercel: Instant (static files + CDN)
-- Solution: Render has paid plans that prevent cold starts
+- Render: may have slower first requests on free tier
+- Netlify: static frontend is instant via CDN
 
 ### 5. **Logging & Monitoring**
-- Render: Real-time logs in dashboard
-- Vercel: Build logs + analytics available
-- Always check logs if deployment fails
+- Render: real-time logs in dashboard
+- Netlify: deployment logs in site settings
 
 ---
 
 ## Cost Estimates (as of May 2026)
 
-### Vercel (Frontend)
-- **Free Tier**: Limited bandwidth, good for testing
-- **Pro**: $20/month - production-grade with analytics
-- **Typical Cost**: $0-20/month
+### Netlify (Frontend)
+- **Free Tier**: good for testing and staging
+- **Pro**: paid plans add bandwidth and team features
+- **Typical Cost**: $0-20/month depending on needs
 
 ### Render (Backend)
-- **Free Tier**: $0, but cold starts after 15 minutes
-- **Standard**: $7/month per instance (2 included for free)
-- **Typical Cost**: $7-20/month (depending on traffic)
+- **Free Tier**: may have cold starts after idle
+- **Standard**: $7/month per instance
+- **Typical Cost**: $7-20/month depending on traffic
 
 **Total Estimated Cost**: $7-40/month for production
 
@@ -265,16 +257,15 @@ git push origin main
 
 - [ ] All environment variables documented and verified
 - [ ] Database connection strings tested
-- [ ] TypeScript compiles without errors (`npm run check`)
-- [ ] Build succeeds locally (`npm run build`)
+- [ ] TypeScript compiles without errors (`pnpm run check`)
+- [ ] Build succeeds locally (`pnpm run build`)
 - [ ] CORS configuration correct
 - [ ] API endpoints responding
 - [ ] Authentication flow working
 - [ ] Error handling implemented
 - [ ] Logging configured
 - [ ] Performance acceptable (< 3s load time)
-- [ ] Security headers configured
-- [ ] HTTPS enforced (automatic)
+- [ ] HTTPS enforced
 - [ ] Backup strategy in place
 - [ ] Monitoring/alerts set up
 
@@ -292,14 +283,14 @@ git push origin main
    - Create web service
    - Set environment variables
 
-3. **Create Vercel Account & Frontend Project**
-   - Go to vercel.com
-   - Import GitHub repository
+3. **Create Netlify Site & Frontend Deployment**
+   - Go to app.netlify.com
+   - Import repository
    - Set environment variables
 
 4. **Cross-Update URLs**
    - Update Render CORS
-   - Update Vercel API URL
+   - Update Netlify API URL
 
 5. **Run Smoke Tests**
    ```bash
@@ -313,10 +304,10 @@ git push origin main
 ## Support Resources
 
 - **Render Documentation**: https://render.com/docs
-- **Vercel Documentation**: https://vercel.com/docs
+- **Netlify Documentation**: https://docs.netlify.com
 - **Deployment Guide** (this repo): `DEPLOYMENT.md`
 - **Quick Reference**: `QUICK_DEPLOY.md`
 
 ---
 
-**Status**: ✅ All configuration files created. Ready for immediate deployment!
+**Status**: ✅ Deployment guide updated for Netlify + Render.
