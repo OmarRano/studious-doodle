@@ -3,7 +3,7 @@
 # Run this after deploying to verify both frontend and backend are working
 
 BACKEND_URL="${1:-https://your-render-backend.onrender.com}"
-FRONTEND_URL="${2:-https://your-vercel-frontend.vercel.app}"
+FRONTEND_URL="${2:-https://your-netlify-frontend.netlify.app}"
 
 echo "🧪 Running post-deployment smoke tests..."
 echo "Backend: $BACKEND_URL"

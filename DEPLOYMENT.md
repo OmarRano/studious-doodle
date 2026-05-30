@@ -1,17 +1,16 @@
-# Deployment Guide: Vercel + Render
+# Deployment Guide: Netlify + Render
 
-This guide covers deploying the **Gimbiya Mall** frontend to Vercel and backend to Render.
+This guide covers deploying the frontend to Netlify and the backend to Render.
 
 ## Project Structure
 
 ```
-/workspaces/studious-doodle/
-├── client/              (Frontend - React/Vite)  → Deploy to Vercel
-├── server/              (Backend - Express)      → Deploy to Render
+/your-repo/
+├── frontend/            (Frontend app)        → Deploy to Netlify
+├── backend/             (Backend server/API)   → Deploy to Render
 ├── shared/              (Shared types)
-├── drizzle/             (Database schema)
 ├── package.json         (Monorepo root)
-├── vercel.json          (Vercel config)
+├── netlify.toml         (Netlify config)
 └── render.yaml          (Render config)
 ```
 
@@ -37,7 +36,7 @@ Required environment variables on Render:
 | `JWT_SECRET` | Secret | Min 32 characters, unique and secure |
 | `PORT` | Fixed | `3000` (Render assigns automatically) |
 | `DATABASE_URL` | Secret | MySQL connection string (if using Drizzle) |
-| `CORS_ORIGIN` | Fixed | Your Vercel frontend URL (e.g., `https://yourdomain.vercel.app`) |
+| `CORS_ORIGIN` | Fixed | Your Netlify frontend URL (e.g., `https://your-site.netlify.app`) |
 | `AWS_ACCESS_KEY_ID` | Secret | AWS S3 credentials (if using) |
 | `AWS_SECRET_ACCESS_KEY` | Secret | AWS S3 credentials (if using) |
 | `AWS_S3_BUCKET` | Fixed | S3 bucket name (if using) |
@@ -53,8 +52,9 @@ Required environment variables on Render:
 4. Configure:
    - **Name**: `gimbiya-mall-backend`
    - **Environment**: `Node`
-   - **Build Command**: `npm run build`
-   - **Start Command**: `npm start`
+   - **Root Directory**: `backend` (if supported)
+   - **Build Command**: `pnpm install && pnpm build`
+   - **Start Command**: `pnpm start`
    - **Plan**: Standard (or Free for testing)
 
 ### Step 3: Set Environment Variables on Render
@@ -75,16 +75,16 @@ Render will automatically build and deploy on every push to your connected branc
 
 ---
 
-## Frontend Deployment (Vercel)
+## Frontend Deployment (Netlify)
 
 ### Prerequisites
-- Vercel account (free tier available)
+- Netlify account (free tier available)
 - Backend URL from Render (from Step 2 above)
-- Firebase configuration
+- Firebase or other client-side service configuration
 
 ### Step 1: Prepare Frontend Environment Variables
 
-Required environment variables on Vercel:
+Required environment variables on Netlify:
 
 | Variable | Description |
 |----------|-------------|
@@ -96,37 +96,63 @@ Required environment variables on Vercel:
 | `VITE_FIREBASE_MESSAGING_SENDER_ID` | Firebase messaging sender ID |
 | `VITE_FIREBASE_APP_ID` | Firebase app ID |
 
-### Step 2: Create Vercel Project
+### Step 2: Create Netlify Site
 
-1. Go to [vercel.com](https://vercel.com)
-2. Click **"Add New"** → **"Project"**
-3. Import your GitHub repository
-4. Select root directory configuration:
-   - **Root Directory**: `.`
-   - **Framework**: `Vite`
+1. Go to [app.netlify.com](https://app.netlify.com)
+2. Click **"Add new site"** → **"Import an existing project"**
+3. Connect your GitHub repository
+4. Choose your repo and configure deployment settings:
+   - **Base directory**: `frontend`
+   - **Build command**: `pnpm install && pnpm build`
+   - **Publish directory**: `dist`
 
 ### Step 3: Configure Build Settings
 
-Vercel should auto-detect, but verify:
-- **Build Command**: `npm run build`
-- **Output Directory**: `client/dist`
-- **Install Command**: `npm install`
+Netlify should use the values above. Confirm:
+- **Build command**: `pnpm install && pnpm build`
+- **Publish directory**: `dist`
+- **Base directory**: `frontend`
 
 ### Step 4: Set Environment Variables
 
-1. Go to project **Settings** → **Environment Variables**
+1. Go to site **Settings** → **Build & deploy** → **Environment**
 2. Add all variables from the table above
-3. Set scope to `Production`, `Preview`, and `Development` as needed
+3. Set scope to `Production` and optionally `Deploy previews`
 
 **Critical**: Set `VITE_API_URL` to your Render backend URL before deploying.
 
 ### Step 5: Deploy
 
 1. Push your code to GitHub
-2. Vercel will automatically deploy on push
+2. Netlify will automatically deploy on push
 3. Once deployment succeeds, your app is live!
 
-**Your frontend URL will be**: `https://your-project-name.vercel.app`
+**Your frontend URL will be**: `https://your-site.netlify.app`
+
+---
+
+## Recommended `netlify.toml`
+
+Create a `netlify.toml` file at the repository root with:
+
+```toml
+[build]
+  base = "frontend"
+  command = "pnpm install && pnpm build"
+  publish = "dist"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Optional API proxy for same-origin /api calls
+[[redirects]]
+  from = "/api/*"
+  to = "https://YOUR_RENDER_BACKEND.onrender.com/:splat"
+  status = 200
+  force = true
+```
 
 ---
 
@@ -134,25 +160,25 @@ Vercel should auto-detect, but verify:
 
 ### Step 1: Update Backend CORS
 
-Once you have your Vercel frontend URL, update the backend on Render:
+Once you have your Netlify frontend URL, update the backend on Render:
 
 1. Go to Render dashboard → Your backend service
 2. **Environment** → Edit `CORS_ORIGIN`
-3. Set it to: `https://your-project-name.vercel.app`
+3. Set it to: `https://your-site.netlify.app`
 4. Redeploy the backend
 
 ### Step 2: Update Frontend API Endpoint
 
-Once you have your Render backend URL, update Vercel:
+Once you have your Render backend URL, update Netlify:
 
-1. Go to Vercel dashboard → Your project
-2. **Settings** → **Environment Variables**
-3. Update `VITE_API_URL` to your Render URL
-4. Redeploy frontend
+1. Go to Netlify dashboard → Your site → **Site settings** → **Build & deploy** → **Environment**
+2. Find `VITE_API_URL`
+3. Update it to your Render URL
+4. Trigger a redeploy
 
 ### Step 3: Test API Connectivity
 
-1. Open your Vercel frontend
+1. Open your Netlify frontend
 2. Check browser console for any CORS errors
 3. Try making an API request (e.g., login/signup)
 4. Monitor Render logs for any backend errors
@@ -168,12 +194,12 @@ Render Dashboard → Your Service → Logs
 - View real-time server logs
 - Check for errors, database connection issues, etc.
 
-### Vercel Logs
+### Netlify Logs
 ```
-Vercel Dashboard → Your Project → Deployments → View Logs
+Netlify Dashboard → Site → Deploys → Logs
 ```
-- Build logs (npm install, vite build, esbuild)
-- Runtime logs (if using serverless functions)
+- Build logs (pnpm install, pnpm build)
+- Deploy logs and status
 
 ---
 
@@ -185,26 +211,26 @@ Vercel Dashboard → Your Project → Deployments → View Logs
 
 **Solution**:
 1. Verify `VITE_API_URL` environment variable is set correctly
-2. Check backend `CORS_ORIGIN` includes your Vercel URL
+2. Check backend `CORS_ORIGIN` includes your Netlify URL
 3. Ensure backend is running (check Render logs)
 
-### Build Failures on Vercel
+### Build Failures on Netlify
 
-**Issue**: `npm run build` fails
+**Issue**: `pnpm build` fails
 
 **Possible Causes**:
-- TypeScript errors (run `npm run check` locally)
+- TypeScript errors (run `pnpm run check` locally)
 - Missing environment variables
 - Dependency conflicts
 
 **Solution**:
-1. Test locally: `cd client && npm run build`
-2. Check Vercel build logs
+1. Test locally: `cd frontend && pnpm build`
+2. Check Netlify build logs
 3. Ensure all environment variables are set
 
 ### Build Failures on Render
 
-**Issue**: `npm run build` fails during deployment
+**Issue**: `pnpm build` fails during deployment
 
 **Possible Causes**:
 - esbuild compilation errors
@@ -212,7 +238,7 @@ Vercel Dashboard → Your Project → Deployments → View Logs
 - TypeScript errors in server code
 
 **Solution**:
-1. Test locally: `npm run build`
+1. Test locally: `cd backend && pnpm build`
 2. Check Render build logs
 3. Verify all dependencies in `package.json`
 
@@ -229,9 +255,9 @@ Vercel Dashboard → Your Project → Deployments → View Logs
 
 ## Production Checklist
 
-- [ ] All environment variables set on both Vercel and Render
-- [ ] CORS_ORIGIN on Render matches Vercel frontend URL
-- [ ] VITE_API_URL on Vercel matches Render backend URL
+- [ ] All environment variables set on both Netlify and Render
+- [ ] `CORS_ORIGIN` on Render matches Netlify frontend URL
+- [ ] `VITE_API_URL` on Netlify matches Render backend URL
 - [ ] MongoDB and database connections tested
 - [ ] JWT_SECRET is secure and unique
 - [ ] API keys (Firebase, AWS, Monnify) are valid and in production
@@ -245,19 +271,21 @@ Vercel Dashboard → Your Project → Deployments → View Logs
 
 ```bash
 # Build backend
-npm run build
+cd backend && pnpm install && pnpm build
 
-# Test build locally
-npm start
+# Test backend locally
+cd backend && pnpm start
 
 # Build frontend
-cd client && npm run build
+cd frontend && pnpm install && pnpm build
 
 # Check for TypeScript errors
-npm run check
+pnpm run check
 
 # Run tests
-npm run test
+pnpm test
+```
+
 ```
 
 ---
@@ -267,18 +295,18 @@ npm run test
 1. **Monorepo Structure**: This project uses a single `package.json` at the root with both frontend and backend code. Keep this in mind when managing dependencies.
 
 2. **Build Output**: 
-   - Frontend builds to `client/dist`
-   - Backend builds to `dist/index.js`
-   - Vercel serves frontend
-   - Render serves backend
+   - Frontend builds to `frontend/dist` (Netlify will publish this directory by default from the `frontend` base)
+   - Backend builds to `backend/dist` (Render will run the backend from the `backend` root)
+   - Netlify serves the frontend
+   - Render serves the backend
 
 3. **Development vs Production**: 
-   - Dev: Frontend makes requests to `http://localhost:3000/api/trpc`
-   - Prod: Frontend makes requests to Render backend URL
+   - Dev: Frontend makes requests to `http://localhost:3000/api/trpc` (or to your local backend port)
+   - Prod: Frontend makes requests to the Render backend URL (set `VITE_API_URL` in Netlify)
 
 4. **Vite Configuration**: The frontend uses Vite with React. The build is optimized for production automatically.
 
-5. **Node Version**: Ensure both Vercel and Render use the same Node.js version (check `.nvmrc` or `package.json` `engines` field).
+5. **Node Version**: Ensure both Netlify and Render use the same Node.js version (check `.nvmrc` or `package.json` `engines` field).
 
 ---
 
